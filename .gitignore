@@ -1,0 +1,8 @@
+.DS_Store
+log.txt
+*/test/
+.venv/
+.ipynb_checkpoints
+__pycache__
+RequirementGuideline.pdf
+moveLook.md

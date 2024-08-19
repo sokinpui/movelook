@@ -1,0 +1,3 @@
+[submodule "getData"]
+	path = getData
+	url = ./getData

@@ -1,6 +1,7 @@
 .DS_Store
 log.txt
 */test/
+test/
 .venv/
 .ipynb_checkpoints
 __pycache__

@@ -6,3 +6,5 @@ log.txt
 __pycache__
 RequirementGuideline.pdf
 moveLook.md
+src/MoveLook.egg-info/
+pyproject.toml

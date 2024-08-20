@@ -1,8 +1,8 @@
 # main program run here
 
-from getData.processor import Processor
+from processor import Processor
 import sys
-from getData.utils.repeatTimer import RepeatedTimer
+from utils.repeatTimer import RepeatedTimer
 from rconfig import Config
 
 config = Config(sys.argv[1]).get_all()

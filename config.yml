@@ -2,70 +2,70 @@
 systems:
   systemless:
     HealthApp_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HealthApp_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HealthApp_2k.log
     Hadoop_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Hadoop_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Hadoop_2k.log
     BGL_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-BGL_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-BGL_2k.log
     Thunderbird_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Thunderbird_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Thunderbird_2k.log
     Zookeeper_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Zookeeper_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Zookeeper_2k.log
     Windows_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Windows_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Windows_2k.log
     HPC_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HPC_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HPC_2k.log
     OpenSSH_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-OpenSSH_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-OpenSSH_2k.log
     HDFS_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HDFS_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HDFS_2k.log
     Apache_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Apache_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Apache_2k.log
     Mac_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Mac_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Mac_2k.log
     Spark_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Spark_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Spark_2k.log
     Android_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Android_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Android_2k.log
     Proxifier_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Proxifier_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Proxifier_2k.log
     Linux_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Linux_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Linux_2k.log
     OpenStack_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-OpenStack_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-OpenStack_2k.log
   system1:
     HealthApp_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HealthApp_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HealthApp_2k.log
     Hadoop_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Hadoop_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Hadoop_2k.log
     BGL_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/BGL_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/BGL_2k.log
     Thunderbird_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Thunderbird_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Thunderbird_2k.log
     Zookeeper_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Zookeeper_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Zookeeper_2k.log
     Windows_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Windows_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Windows_2k.log
     HPC_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HPC_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HPC_2k.log
     OpenSSH_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/OpenSSH_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenSSH_2k.log
     HDFS_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HDFS_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HDFS_2k.log
     Apache_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Apache_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Apache_2k.log
     Mac_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Mac_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Mac_2k.log
     Spark_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Spark_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Spark_2k.log
     Android_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Android_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Android_2k.log
     Proxifier_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Proxifier_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Proxifier_2k.log
     Linux_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Linux_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Linux_2k.log
     OpenStack_2k.log:
-      path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/OpenStack_2k.log
+      path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenStack_2k.log
 
 
 # log write to database's interval(in second)
@@ -81,101 +81,101 @@ searchPattern:
   systems:
     systemless:
       HealthApp_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HealthApp_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HealthApp_2k.log
         pattern: ""
       Hadoop_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Hadoop_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Hadoop_2k.log
         pattern: ""
       BGL_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-BGL_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-BGL_2k.log
         pattern: ""
       Thunderbird_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Thunderbird_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Thunderbird_2k.log
         pattern: ""
       Zookeeper_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Zookeeper_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Zookeeper_2k.log
         pattern: ""
       Windows_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Windows_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Windows_2k.log
         pattern: ""
       HPC_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HPC_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HPC_2k.log
         pattern: ""
       OpenSSH_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-OpenSSH_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-OpenSSH_2k.log
         pattern: ""
       HDFS_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-HDFS_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-HDFS_2k.log
         pattern: ""
       Apache_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Apache_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Apache_2k.log
         pattern: ""
       Mac_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Mac_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Mac_2k.log
         pattern: ""
       Spark_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Spark_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Spark_2k.log
         pattern: ""
       Android_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Android_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Android_2k.log
         pattern: ""
       Proxifier_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Proxifier_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Proxifier_2k.log
         pattern: ""
       Linux_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-Linux_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-Linux_2k.log
         pattern: ""
       OpenStack_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/systemLess/less-OpenStack_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/systemLess/less-OpenStack_2k.log
         pattern: ""
     system1:
       HealthApp_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HealthApp_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HealthApp_2k.log
         pattern: ""
       Hadoop_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Hadoop_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Hadoop_2k.log
         pattern: ""
       BGL_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/BGL_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/BGL_2k.log
         pattern: ""
       Thunderbird_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Thunderbird_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Thunderbird_2k.log
         pattern: ""
       Zookeeper_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Zookeeper_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Zookeeper_2k.log
         pattern: ""
       Windows_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Windows_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Windows_2k.log
         pattern: ""
       HPC_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HPC_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HPC_2k.log
         pattern: ""
       OpenSSH_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/OpenSSH_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenSSH_2k.log
         pattern: ""
       HDFS_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/HDFS_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/HDFS_2k.log
         pattern: ""
       Apache_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Apache_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Apache_2k.log
         pattern: ""
       Mac_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Mac_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Mac_2k.log
         pattern: ""
       Spark_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Spark_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Spark_2k.log
         pattern: ""
       Android_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Android_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Android_2k.log
         pattern: ""
       Proxifier_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Proxifier_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Proxifier_2k.log
         pattern: ""
       Linux_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/Linux_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/Linux_2k.log
         pattern: ""
       OpenStack_2k.log:
-        path: /Users/mac/repo/project/ITSC/MoveLook/getData/log/system1/OpenStack_2k.log
+        path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenStack_2k.log
         pattern: ""
 
 

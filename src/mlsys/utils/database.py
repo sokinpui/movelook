@@ -12,7 +12,7 @@ class Database:
         with open(config_file, 'r') as f:
             return yaml.safe_load(f)
 
-    def get_host(self):
+    def __get_host(self):
         config = self.config
         scheme = config['ESHost']['scheme']
         host = config['ESHost']['host']
@@ -21,7 +21,7 @@ class Database:
         return [{'scheme': scheme, 'host': host, 'port': port}]
 
     def connect(self):
-        host = self.get_host()
+        host = self.__get_host()
         try:
             self.es = Elasticsearch(host)
             info = self.es.info()
@@ -52,9 +52,6 @@ class Database:
     def clear_database(self):
         self.es.indices.delete(index="_all")
         print("All indices are deleted")
-
-    def printa(self):
-      print("Hello from Database")
 
     # mapping = {
     #         "properties": {

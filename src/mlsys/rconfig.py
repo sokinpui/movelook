@@ -5,11 +5,11 @@ class Config:
         with open(config_file, 'r') as stream:
             self.config = yaml.safe_load(stream)
 
-    def get(self, key):
-        return self.config[key]
-
     def get_all(self):
       return self.config
+
+    def get_search_items(self):
+      return self.config['searchPattern']['systems']
 
 if __name__ == "__main__":
   print("config.py loaded")

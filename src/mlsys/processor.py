@@ -16,7 +16,6 @@ class Processor:
         self.marker = {}
         self.readtime = {}
         self.es = Database(config)
-        self.es.printa()
 
 # read a yml config file
     def read_config(self, config_file):
@@ -29,13 +28,13 @@ class Processor:
 
         for system in systems:
             for log in systems[system]:
-                self.process_log(system, log)
+                self.__process_log(system, log)
                 print()
 
-    def process_log(self, system, log):
+    def __process_log(self, system, log):
         print(f"Reading {log} from {system}")
         path = self.config['systems'][system][log]['path']
-        marker = self.get_marker(system, log)
+        marker = self.__get_marker(system, log)
         #print the log name and the system come from
 
         with open(path, 'r') as f:
@@ -53,7 +52,7 @@ class Processor:
 
             # reset marker if last marker is greater than No. of lines
             if marker > len(lines):
-                marker = self.reset_marker(system, log)
+                marker = self.__reset_marker(system, log)
 
 
             for i in range(marker, len(lines)):
@@ -62,23 +61,20 @@ class Processor:
                 index = system
                 self.es.insert_log_line(index, log, lines[i], path, i, self.readtime[(system, log)])
             # update marker to last line
-            self.set_marker(system, log, len(lines))
+            self.__set_marker(system, log, len(lines))
 
-    def get_marker(self, system, log):
+    def __get_marker(self, system, log):
         # if it is new file, set marker to -1
         return self.marker.get((system, log), 0)
 
-    def set_marker(self, system, log, marker):
+    def __set_marker(self, system, log, marker):
         self.marker[(system, log)] = marker
         print(f"Set marker to {marker}")
 
-    def reset_marker(self, system, log):
+    def __reset_marker(self, system, log):
         self.marker[(system, log)] = 0
         print(f"Reset marker to 0")
         return self.marker[(system, log)]
-
-    def print_marker(self):
-        print(f"Marker: {self.marker}")
 
 # test config reading, pring the config
 if __name__ == '__main__':

@@ -1,0 +1,26 @@
+systems:
+  system1:
+    HealthApp_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/HealthApp_2k.log
+    Hadoop_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Hadoop_2k.log
+    BGL_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/BGL_2k.log
+    Thunderbird_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Thunderbird_2k.log
+    Zookeeper_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Zookeeper_2k.log
+    Windows_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Windows_2k.log
+    HPC_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/HPC_2k.log
+    OpenSSH_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/OpenSSH_2k.log
+    HDFS_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/HDFS_2k.log
+    Apache_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Apache_2k.log
+    Mac_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Mac_2k.log
+    Spark_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Spark_2k.log
+    Android_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Android_2k.log
+    Proxifier_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Proxifier_2k.log
+    Linux_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/Linux_2k.log
+    OpenStack_2k.log: /Users/mac/repo/project/ITSC/MoveLook/getData/log/OpenStack_2k.log
+
+frequency: 5
+
+ESHost:
+  scheme: http
+  host: localhost
+  port: 9200
+

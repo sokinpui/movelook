@@ -1,5 +1,0 @@
-getData
-main
-rconfig
-searchData
-utils

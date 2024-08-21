@@ -6,13 +6,14 @@ from utils.repeatTimer import RepeatedTimer
 from utils.database import Database
 from rconfig import Config
 
-config = Config(sys.argv[1]).get_all()
+config = Config(sys.argv[1])
+print(config)
 
 def init_log_reading():
     # read the config file
-    read_log_db = Database(config)
+    read_log_db = Database(config.get_db_info())
     read_log_db.connect()
-    p = Processor(config, read_log_db)
+    p = Processor(config.get_all(), read_log_db)
     # print config interval
     print(f"Interval: {p.config['interval']}")
     return p
@@ -21,6 +22,7 @@ def init_log_reading():
 def main(p):
     interval = p.config['interval']
     rt = RepeatedTimer(interval, p.process)
+    rt.immediate()
     try:
         while True:
             print()

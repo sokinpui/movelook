@@ -3,9 +3,10 @@ from elasticsearch import Elasticsearch
 import yaml
 
 class Database:
-    def __init__(self, config):
+    def __init__(self, url_info):
         # self.config = self.read_config(config_file)
-        self.config = config
+        self.url_info = url_info
+        self.__get_host()
 
     def read_config(self, config_file):
         print(f"Reading config from {config_file}")
@@ -13,12 +14,11 @@ class Database:
             return yaml.safe_load(f)
 
     def __get_host(self):
-        config = self.config
-        scheme = config['ESHost']['scheme']
-        host = config['ESHost']['host']
-        port = config['ESHost']['port']
-        print(f"Elasticsearch Connecting to {scheme}://{host}:{port}")
-        return [{'scheme': scheme, 'host': host, 'port': port}]
+        self.scheme = self.url_info['scheme']
+        self.host = self.url_info['host']
+        self.port = self.url_info['port']
+        print(f"Elasticsearch Connecting to {self.scheme}://{self.host}:{self.port}")
+        return [{"scheme": self.scheme, "host": self.host, "port": self.port}]
 
     def connect(self):
         host = self.__get_host()

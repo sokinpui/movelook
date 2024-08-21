@@ -9,7 +9,16 @@ class Config:
       return self.config
 
     def get_search_items(self):
-      return self.config['searchPattern']['systems']
+      return self.config['searchor']['systems']
+
+    def get_seaarchor(self):
+      return self.config['searchor']
+
+    def get_search_index_name(self):
+      return self.config['searchor']['index_name']
+
+    def get_db_info(self):
+      return self.config['ESHost']
 
 if __name__ == "__main__":
   print("config.py loaded")

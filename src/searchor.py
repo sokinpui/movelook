@@ -11,29 +11,34 @@
         #     }
         # }
 
-from utils.database import Database
-
 class ESSearcher:
-  def __init__(self, search_items, read_log_db, ouput_log_db):
+  def __init__(self, search_items, dest_index, read_log_db, ouput_db):
+    """
+    search_items: search items in config.yml['searchor']['systems']
+    dest_index: destination index config.yml['searchor']['indexName']
+    read_log_db: the database to read from
+    ouput_log_db: the database to write
+    """
+    # NOTE: read_log_db and output_log_db are the same
     self.search_items = search_items
     self.input_db = read_log_db
-    self.output_db = ouput_log_db
-    # TODO: support config in config.yml
-    self.searcher_index = "lookup"
+    self.output_db = ouput_db
+    self.dest_index = dest_index
 
   # get search string
   def __get_search_string(self, system_name, system_log):
     return self.search_items[system_name][system_log]['pattern']
 
-  # maybe this search function can change outside is more fixiable for search
-  def search(self, dest_index):
+  def search(self ):
     for system_name in self.search_items:
       for system_log in self.search_items[system_name]:
         search_string = self.__get_search_string(system_name, system_log)
         respone = self.regex_search(search_string, system_name, system_log)
         self.mark_processed(self.input_db, system_name, system_name, system_log)
-        self.output_to_destination(self.output_db, dest_index, respone)
-
+        self.output_to_destination(self.output_db, self.dest_index, respone)
+        print(f"Search {system_name} {system_log} with {search_string} done")
+        # print result
+        print(f"Found {respone['total']} hits")
 
   def regex_search(self, search_string, system_name="", log_name=""):
     query = {
@@ -41,7 +46,8 @@ class ESSearcher:
           "bool": {
             "must": [
               {"regexp": {"details.line": search_string}}
-              ]
+              ],
+            "must": []
             }
           }
         }
@@ -54,10 +60,8 @@ class ESSearcher:
       query["query"]["bool"]["must"].append({"match": {"system": system_name}})
       query["query"]["bool"]["must"].append({"match": {"log": log_name}})
 
-    response = self.input_db.search(index=system_name, body=query)
-    return response['hits']
-    # TODO: check which one is more suitable
-    # return response['hits']['hits']
+    response = self.input_db.es.search(index=system_name, body=query)
+    return response['hits']['hits']
 
   # mark processed flag as true
   def mark_processed(self, db, index, system_name, log_name):
@@ -76,12 +80,7 @@ class ESSearcher:
         }
     respone = db.update_by_query(index=index, body=query)
     # TODO: maybe return other value
-    return respone['hits']
-
-  # TODO: assume write to stdout
-  # output searched results
-  def output(self):
-    pass
+    return response['hits']['hits']
 
   # output to destination
   def output_to_destination(self, dest_db, dest_index, query):

@@ -1,7 +1,6 @@
 import os
 import yaml
 import datetime
-from utils.database import Database
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
@@ -10,12 +9,12 @@ from utils.database import Database
 
 
 class Processor:
-    def __init__(self, config):
+    def __init__(self, config, read_log_db):
         # self.config = self.read_config(config_file)
         self.config = config
         self.marker = {}
         self.readtime = {}
-        self.es = Database(config)
+        self.es = read_log_db
 
 # read a yml config file
     def read_config(self, config_file):
@@ -78,6 +77,4 @@ class Processor:
 
 # test config reading, pring the config
 if __name__ == '__main__':
-    processor = Processor('config.yml')
-    print(processor.config)
-    # processor.process()
+  pass

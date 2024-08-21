@@ -3,21 +3,21 @@
 from processor import Processor
 import sys
 from utils.repeatTimer import RepeatedTimer
+from utils.database import Database
 from rconfig import Config
 
 config = Config(sys.argv[1]).get_all()
 
 def init_log_reading():
     # read the config file
-    p = Processor(config)
-    p.es.connect()
+    read_log_db = Database(config)
+    read_log_db.connect()
+    p = Processor(config, read_log_db)
     # print config interval
     print(f"Interval: {p.config['interval']}")
     return p
 
-# TODO: read large file
-# TODO: count time using for inserting data
-# TODO: connect to cuhk cluster
+# TODO: make a plugin system for warning
 def main(p):
     interval = p.config['interval']
     rt = RepeatedTimer(interval, p.process)

@@ -36,11 +36,13 @@ class Database:
         doc = {
             'system': system,
             'log': log,
-            'line': line,
-            'path': path,
-            'lineNumber': lineNumber,
-            'timestamp': timestamp,
-            'processed': False,
+            'details': {
+              'line': line,
+              'path': path,
+              'lineNumber': lineNumber,
+              'timestamp': timestamp,
+              'processed': False,
+            }
         }
         self.insert(system, doc)
 

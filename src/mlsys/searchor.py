@@ -1,3 +1,16 @@
+#the data in ElasticSearch structure as following
+        # doc = {
+        #     'system': system,
+        #     'log': log,
+        #     'details': {
+        #       'line': line,
+        #       'path': path,
+        #       'lineNumber': lineNumber,
+        #       'timestamp': timestamp,
+        #       'processed': False,
+        #     }
+        # }
+
 from utils.database import Database
 
 class ESSearcher:
@@ -22,13 +35,12 @@ class ESSearcher:
         self.output_to_destination(self.output_db, dest_index, respone)
 
 
-
   def regex_search(self, search_string, system_name="", log_name=""):
     query = {
         "query": {
           "bool": {
             "must": [
-              {"regexp": {"line": search_string}},
+              {"regexp": {"details.line": search_string}}
               ]
             }
           }
@@ -48,21 +60,23 @@ class ESSearcher:
     # return response['hits']['hits']
 
   # mark processed flag as true
-  def mark_processed(self, db, index, system_name, system_log):
+  def mark_processed(self, db, index, system_name, log_name):
     query = {
         "query": {
           "bool": {
             "must": [
-              {"match": {"system": "your_system_value"}},
-              {"match": {"log": "your_log_value"}}
+              {"match": {"system": system_name}},
+              {"match": {"log": log_name}}
               ]
             }
           },
         "script": {
-          "source": "ctx._source.processed = true"
+          "source": "ctx._source.details.processed = true",
           }
         }
-    pass
+    respone = db.update_by_query(index=index, body=query)
+    # TODO: maybe return other value
+    return respone['hits']
 
   # TODO: assume write to stdout
   # output searched results

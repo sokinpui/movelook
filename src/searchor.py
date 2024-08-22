@@ -10,6 +10,7 @@
         #       'processed': False,
         #     }
         # }
+import datetime
 
 class ESSearcher:
   def __init__(self, search_items, dest_index, read_log_db, ouput_db):
@@ -33,12 +34,12 @@ class ESSearcher:
     for system_name in self.search_items:
       for system_log in self.search_items[system_name]:
         search_string = self.__get_search_string(system_name, system_log)
-        respone = self.regex_search(search_string, system_name, system_log)
+        hits = self.regex_search(search_string, system_name, system_log)
         self.mark_processed(self.input_db, system_name, system_name, system_log)
-        self.output_to_destination(self.output_db, self.dest_index, respone)
+        self.output_to_destination(hits, self.output_db, self.dest_index)
         print(f"Search {system_name} {system_log} with {search_string} done")
         # print result
-        print(f"Found {respone['total']} hits")
+        print(f"Found {hits['total']} hits")
 
   def regex_search(self, search_string, system_name="", log_name=""):
     query = {
@@ -78,13 +79,17 @@ class ESSearcher:
           "source": "ctx._source.details.processed = true",
           }
         }
-    respone = db.update_by_query(index=index, body=query)
+    respone = db.es.update_by_query(index=index, body=query)
+    return respone['updated']
     # TODO: maybe return other value
-    return response['hits']['hits']
 
   # output to destination
-  def output_to_destination(self, dest_db, dest_index, query):
-    dest_db.insert(dest_index, query)
+  def output_to_destination(self, hits, dest_db, dest_index):
+    for hit in hits:
+      doc = hit['_source']
+      # update timestamp
+      doc['details']['timestamp'] = datetime.datetime.now()
+      dest_db.insert(dest_index, doc)
 
 if __name__ == "__main__":
   pass

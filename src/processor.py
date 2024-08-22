@@ -37,10 +37,7 @@ class Processor:
         #print the log name and the system come from
 
         with open(path, 'r') as f:
-            # format the last read time
-            m_time = os.path.getmtime(path)
-            dt_m = datetime.datetime.fromtimestamp(m_time)
-            self.readtime[(system, log)] = dt_m
+            self.readtime[(system, log)] = datetime.datetime.now()
             print(f"Last read time is {self.readtime[(system, log)]}")
 
             lines = f.readlines()

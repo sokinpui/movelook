@@ -29,8 +29,8 @@ class Database:
         except Exception as e:
             print("Error connecting to Elasticsearch:", str(e))
 
-    def insert(self, index, query):
-        self.es.index(index=index, body=query)
+    def insert(self, index, body):
+        self.es.index(index=index, body=body)
 
     def insert_log_line(self, system, log, line, path, lineNumber, timestamp):
         doc = {

@@ -22,11 +22,11 @@ def init_log_reading():
 def main(p):
     interval = p.config['interval']
     rt = RepeatedTimer(interval, p.process)
-    rt.immediate()
+    # rt.function()
     try:
         while True:
-            print()
-            print('Enter command (q:quit, c:clear database, r:run processor, h:help)')
+            print('Enter command (h for help):')
+            print('Command:', end=' ')
             command = input()
             if command == 'q':
                 rt.stop()

@@ -26,10 +26,6 @@ class RepeatedTimer(object):
       self._timer.start()
       self.is_running = True
 
-  def immediate(self):
-    self.function(*self.args, **self.kwargs)
-    self.is_running = False
-
   def stop(self):
     if self.is_running:
       self._timer.cancel()

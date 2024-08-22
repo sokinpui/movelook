@@ -1,10 +1,11 @@
 # main program run here
 
 from processor import Processor
-import sys
 from utils.repeatTimer import RepeatedTimer
 from utils.database import Database
-from rconfig import Config
+from config import Config
+
+import sys
 
 config = Config(sys.argv[1])
 print(config)
@@ -17,6 +18,17 @@ def init_log_reading():
     # print config interval
     print(f"Interval: {p.config['interval']}")
     return p
+
+# TODO: separate interval for different module in config.yml
+# modified code in processor.py
+
+# TODO: searchor.py: pass searching if the flag "processed" is true
+
+# TODO: integrate a demo of warning system
+
+# TODO: can hot reload the config file
+# new method in config.py: self.reload_config()
+# simply read the config file again
 
 # TODO: make a plugin system for warning
 def main(p):

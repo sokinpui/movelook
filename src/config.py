@@ -8,6 +8,9 @@ class Config:
     def get_all(self):
       return self.config
 
+    def get_reader_config(self):
+      return self.config['reader']
+
     def get_search_items(self):
       return self.config['searchor']['systems']
 

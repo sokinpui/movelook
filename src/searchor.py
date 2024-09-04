@@ -33,13 +33,15 @@ class ESSearcher:
   def search(self ):
     for system_name in self.search_items:
       for system_log in self.search_items[system_name]:
-        search_string = self.__get_search_string(system_name, system_log)
-        hits = self.regex_search(search_string, system_name, system_log)
-        self.mark_processed(self.input_db, system_name, system_name, system_log)
-        self.output_to_destination(hits, self.output_db, self.dest_index)
-        print(f"Search {system_name} {system_log} with {search_string} done")
-        # print result
-        print(f"Found {hits['total']} hits")
+        for string in self.search_items[system_name][system_log]:
+          if self.get_processed_flag(self.input_db,system_name, system_name, system_log):
+            continue
+          hits = self.regex_search(string, system_name, system_log)
+          self.mark_processed(self.input_db, system_name, system_name, system_log)
+          self.output_to_destination(hits, self.output_db, self.dest_index)
+          print(f"Search {system_name} {system_log} with {string} done")
+          # print result
+          print(f"Found {hits['total']} hits")
 
   def regex_search(self, search_string, system_name="", log_name=""):
     query = {
@@ -82,6 +84,20 @@ class ESSearcher:
     respone = db.es.update_by_query(index=index, body=query)
     return respone['updated']
     # TODO: maybe return other value
+
+  def get_processed_flag(self, db, index, system_name, log_name):
+    query = {
+      "query": {
+        "bool": {
+          "must": [
+            {"match": {"system": system_name}},
+            {"match": {"log": log_name}}
+            ]
+          }
+        }
+      }
+    response = db.es.search(index=index, body=query)
+    return response['hits']['hits'][0]['_source']['details']['processed']
 
   # output to destination
   def output_to_destination(self, hits, dest_db, dest_index):

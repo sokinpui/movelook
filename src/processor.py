@@ -13,6 +13,7 @@ class Processor:
         # self.config = self.read_config(config_file)
         self.config = config
         self.marker = {}
+        self.marker_db_index = 'marker'
         self.readtime = {}
         self.es = read_log_db
 
@@ -37,7 +38,7 @@ class Processor:
         #print the log name and the system come from
 
         with open(path, 'r') as f:
-            self.readtime[(system, log)] = datetime.datetime.now()
+            # self.readtime[(system, log)] = datetime.datetime.now()
             print(f"Last read time is {self.readtime[(system, log)]}")
 
             lines = f.readlines()
@@ -55,17 +56,61 @@ class Processor:
                 print(lines[i])
                 # insert to database
                 index = system
-                self.es.insert_log_line(index, log, lines[i], path, i, self.readtime[(system, log)])
+                doc = {
+                    'system': system,
+                    'log': log,
+                    'details': {
+                      'line': lines[i],
+                      'path': path,
+                      'lineNumber': i,
+                      # 'timestamp': self.readtime[(system, log)],
+                      'timestamp': datetime.datetime.now(),
+                      'processed': False,
+                      }
+                    }
+                self.es.insert(index, doc)
             # update marker to last line
             self.__set_marker(system, log, len(lines))
 
     def __get_marker(self, system, log):
-        # if it is new file, set marker to -1
+        # search the variable first, if not exist then search from database, if not exist, then create one
+        # marker = self.marker.get((system, log), -1)
+        # if marker == -1:
+        #     # search from database
+        #     # get the last line number
+        #     query = {
+        #   "query": {
+        #     "bool": {
+        #       "must": [
+        #         {"match": {"system": system}},
+        #         {"match": {"log": log}}
+        #         ]
+        #       }
+        #     }
+        #   }
+        #     res = self.es.es.search(index=self.marker_db_index, body=query)
+        #     if res['hits']['total']['value'] > 0:
+        #         marker = res['hits']['hits'][0]['_source']['details']['line']
+        #         self.marker[(system, log)] = marker
+        #         print(f"Get marker from database: {marker}")
+        #     else:
+        #         self.marker[(system, log)] = 0
+        #         print(f"Create new marker: 0")
         return self.marker.get((system, log), 0)
 
     def __set_marker(self, system, log, marker):
         self.marker[(system, log)] = marker
         print(f"Set marker to {marker}")
+        # # set markder in new index
+        # doc = {
+        #     'system': system,
+        #     'log': log,
+        #     'details': {
+        #       'line': marker,
+        #       'timestamp': datetime.datetime.now(),
+        #       }
+        #     }
+        # self.es.insert(self.marker_db_index, doc)
 
     def __reset_marker(self, system, log):
         self.marker[(system, log)] = 0

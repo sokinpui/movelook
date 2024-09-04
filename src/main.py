@@ -8,21 +8,17 @@ from config import Config
 import sys
 
 config = Config(sys.argv[1])
+reader_config = config.get_reader_config()
 print(config)
 
 def init_log_reading():
     # read the config file
     read_log_db = Database(config.get_db_info())
     read_log_db.connect()
-    p = Processor(config.get_all(), read_log_db)
+    p = Processor(reader_config, read_log_db)
     # print config interval
     print(f"Interval: {p.config['interval']}")
     return p
-
-# TODO: separate interval for different module in config.yml
-# modified code in processor.py
-
-# TODO: searchor.py: pass searching if the flag "processed" is true
 
 # TODO: integrate a demo of warning system
 
@@ -32,8 +28,8 @@ def init_log_reading():
 
 # TODO: make a plugin system for warning
 def main(p):
-    interval = p.config['interval']
-    rt = RepeatedTimer(interval, p.process)
+    log_reading_interval = reader_config['interval']
+    log_reading_timer = RepeatedTimer(log_reading_interval, p.process)
     # rt.function()
     try:
         while True:
@@ -41,7 +37,7 @@ def main(p):
             print('Command:', end=' ')
             command = input()
             if command == 'q':
-                rt.stop()
+                log_reading_timer.stop()
                 break
             # clear the database
             elif command == 'c':
@@ -49,11 +45,11 @@ def main(p):
                 p = init_log_reading()
             elif command == 'r':
                 print('Running processor')
-                rt.start()
+                log_reading_timer.start()
             # stop the processor
             elif command == 's':
                 print('Stop processor')
-                rt.stop()
+                log_reading_timer.stop()
             elif command == 'h':
                 print('q:quit')
                 print('c:clear database')
@@ -62,9 +58,9 @@ def main(p):
 
     except KeyboardInterrupt:
         print('Interrupted')
-        rt.stop()
+        log_reading_timer.stop()
     finally:
-        rt.stop()
+        log_reading_timer.stop()
 
 # def main(p):
 #     interval = p.config['interval']

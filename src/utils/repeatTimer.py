@@ -2,7 +2,7 @@ import threading
 import time
 import traceback
 
-class RepeatedTimer(object):
+class Timer(object):
   def __init__(self, interval, function, *args, **kwargs):
     self._timer = None
     self.interval = interval
@@ -53,7 +53,7 @@ if __name__ == '__main__':
   def hello(name):
     print("Hello %s!" % name)
   print("starting...")
-  rt = RepeatedTimer(1, hello, "World")
+  rt = Timer(1, hello, "World")
   try:
     time.sleep(5)
   finally:

@@ -1,6 +1,6 @@
-import os
 import yaml
 import datetime
+from utils.repeatTimer import Timer
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
@@ -8,14 +8,24 @@ import datetime
 # reset marker if last marker is greater than max line
 
 
-class Processor:
-    def __init__(self, config, read_log_db):
-        # self.config = self.read_config(config_file)
-        self.config = config
+class Collector:
+    def __init__(self, collector_config, db):
+        """
+        collector_config = config['collector']
+        """
+        self.systems = collector_config['systems']
+        self.interval = collector_config['interval']
         self.marker = {}
-        self.marker_db_index = 'marker'
         self.readtime = {}
-        self.es = read_log_db
+        self.es = db
+        # self.marker_db_index = 'marker'
+
+    def start(self):
+      self.timer = Timer(self.interval, self.process)
+      self.timer.start()
+
+    def stop(self):
+      self.timer.stop()
 
 # read a yml config file
     def read_config(self, config_file):
@@ -24,16 +34,14 @@ class Processor:
 
 # the yml specifies log from which system, then which log
     def process(self):
-        systems = self.config['systems']
-
-        for system in systems:
-            for log in systems[system]:
-                self.__process_log(system, log)
+        for system_name in self.systems:
+            for log in self.systems[system_name]:
+                self.__process_log(system_name, log)
                 print()
 
     def __process_log(self, system, log):
         print(f"Reading {log} from {system}")
-        path = self.config['systems'][system][log]['path']
+        path = self.systems[system][log]['path']
         marker = self.__get_marker(system, log)
         #print the log name and the system come from
 

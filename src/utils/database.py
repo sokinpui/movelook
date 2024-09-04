@@ -3,9 +3,9 @@ from elasticsearch import Elasticsearch
 import yaml
 
 class Database:
-    def __init__(self, url_info):
+    def __init__(self, database_config):
         # self.config = self.read_config(config_file)
-        self.url_info = url_info
+        self.host_info = database_config['host']
         self.__get_host()
 
     def read_config(self, config_file):
@@ -14,9 +14,9 @@ class Database:
             return yaml.safe_load(f)
 
     def __get_host(self):
-        self.scheme = self.url_info['scheme']
-        self.host = self.url_info['host']
-        self.port = self.url_info['port']
+        self.scheme = self.host_info['scheme']
+        self.host = self.host_info['host']
+        self.port = self.host_info['port']
         print(f"Elasticsearch Connecting to {self.scheme}://{self.host}:{self.port}")
         return [{"scheme": self.scheme, "host": self.host, "port": self.port}]
 

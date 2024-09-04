@@ -5,25 +5,19 @@ class Config:
         with open(config_file, 'r') as stream:
             self.config = yaml.safe_load(stream)
 
-    def get_all(self):
+    def get_all_config(self):
       return self.config
 
-    def get_reader_config(self):
-      return self.config['reader']
+    def get_collector_config(self):
+      return self.config['collector']
 
-    def get_search_items(self):
-      return self.config['searchor']['systems']
+    def get_scanner_config(self):
+      return self.config['scanner']
 
-    def get_seaarchor(self):
-      return self.config['searchor']
-
-    def get_search_index_name(self):
-      return self.config['searchor']['index_name']
-
-    def get_db_info(self):
-      return self.config['ESHost']
+    def get_database_config(self):
+      return self.config['database']
 
 if __name__ == "__main__":
   print("config.py loaded")
   config = Config("config.yml")
-  print(config.get_all())
+  print(config.get_all_config())

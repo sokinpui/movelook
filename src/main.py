@@ -1,76 +1,51 @@
-# main program run here
-
-from processor import Processor
-from utils.repeatTimer import RepeatedTimer
-from utils.database import Database
+from collector import Collector
+from scanner import Scanner
 from config import Config
-
+from utils.database import Database
 import sys
 
 config = Config(sys.argv[1])
-reader_config = config.get_reader_config()
-print(config)
 
-def init_log_reading():
-    # read the config file
-    read_log_db = Database(config.get_db_info())
-    read_log_db.connect()
-    p = Processor(reader_config, read_log_db)
-    # print config interval
-    print(f"Interval: {p.config['interval']}")
-    return p
+collector_config = config.get_collector_config()
+scanner_config = config.get_scanner_config()
+db_config = config.get_database_config()
 
-# TODO: integrate a demo of warning system
+database = Database(db_config)
+collector = Collector(collector_config, database)
+scanner = Scanner(scanner_config, database)
 
-# TODO: can hot reload the config file
-# new method in config.py: self.reload_config()
-# simply read the config file again
-
-# TODO: make a plugin system for warning
-def main(p):
-    log_reading_interval = reader_config['interval']
-    log_reading_timer = RepeatedTimer(log_reading_interval, p.process)
-    # rt.function()
+def main():
+  while True:
     try:
-        while True:
-            print('Enter command (h for help):')
-            print('Command:', end=' ')
-            command = input()
-            if command == 'q':
-                log_reading_timer.stop()
-                break
-            # clear the database
-            elif command == 'c':
-                p.es.clear_database()
-                p = init_log_reading()
-            elif command == 'r':
-                print('Running processor')
-                log_reading_timer.start()
-            # stop the processor
-            elif command == 's':
-                print('Stop processor')
-                log_reading_timer.stop()
-            elif command == 'h':
-                print('q:quit')
-                print('c:clear database')
-                print('r:run processor')
-                print('s:stop processor')
-
+      command = input("Please enter a command: ")
+      if command == "start collector":
+        collector.start()
+      elif command == "stop collector":
+        collector.stop()
+      elif command == "start scanner":
+        scanner.start()
+      elif command == "stop scanner":
+        scanner.stop()
+      elif command == "clean":
+        database.clear_database()
+      elif command == "q":
+        scanner.stop()
+        collector.stop()
+        break
+      elif command == "h":
+        print("start collector: start the collector module")
+        print("stop collector: stop the collector module")
+        print("start scanner: start the scanner module")
+        print("stop scanner: stop the scanner module")
+        print("clean: clean up the database")
+        print("q: quit the program")
+      else:
+        print("Invalid command")
     except KeyboardInterrupt:
-        print('Interrupted')
-        log_reading_timer.stop()
-    finally:
-        log_reading_timer.stop()
+      print("keyboard interrupt, stopping all modules")
+      scanner.stop()
+      collector.stop()
 
-# def main(p):
-#     interval = p.config['interval']
-#     rt = RepeatedTimer(interval, p.print_marker)
-#     rt.start()
-#     time.sleep(10)
-#     rt.stop()
+if __name__ == "__main__":
+  main()
 
-
-
-if __name__ == '__main__':
-    processor = init_log_reading()
-    main(processor)

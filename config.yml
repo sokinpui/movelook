@@ -1,5 +1,5 @@
 # log going to be watched
-reader:
+collector:
   interval: 50
   systems:
     systemless:
@@ -72,14 +72,16 @@ reader:
 
 # log write to database's interval(in second)
 
-ESHost:
-  scheme: http
-  host: localhost
-  port: 9200
+database:
+  host:
+    scheme: http
+    host: localhost
+    port: 9200
 
 # search pattern
-searchor:
-  index_name: lookup
+scanner:
+  index: lookup
+  interval: 50
   systems:
     systemless:
       HealthApp_2k.log:

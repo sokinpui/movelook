@@ -11,7 +11,7 @@
         #     }
         # }
 import datetime
-from utils.repeatTimer import Timer
+from utils.timer import Timer
 
 class Scanner:
   def __init__(self, scanner_config, db):
@@ -22,9 +22,9 @@ class Scanner:
     self.interval = scanner_config['interval']
     self.index = scanner_config['index']
     self.db = db
+    self.timer = Timer(self.interval, self.search)
 
   def start(self):
-    self.timer = Timer(self.interval, self.search)
     self.timer.start()
 
   def stop(self):

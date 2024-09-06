@@ -1,6 +1,6 @@
 import yaml
 import datetime
-from utils.repeatTimer import Timer
+from utils.timer import Timer
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
@@ -18,10 +18,10 @@ class Collector:
         self.marker = {}
         self.readtime = {}
         self.es = db
+        self.timer = Timer(self.interval, self.process)
         # self.marker_db_index = 'marker'
 
     def start(self):
-      self.timer = Timer(self.interval, self.process)
       self.timer.start()
 
     def stop(self):

@@ -69,9 +69,6 @@ collector:
       OpenStack_2k.log:
         path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenStack_2k.log
 
-
-# log write to database's interval(in second)
-
 database:
   host:
     scheme: http
@@ -182,4 +179,13 @@ scanner:
         path: /Users/mac/repo/project/ITSC/MoveLook/log/system1/OpenStack_2k.log
         pattern: ""
 
-
+modules:
+  module1:
+    module_package_path: ""
+    lookup_systems: ""
+    lookup_log:
+      - ""
+      - ""
+    lookup_pattern:
+    interval: 50
+    stop_tracking_after: 100

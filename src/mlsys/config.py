@@ -17,6 +17,9 @@ class Config:
     def get_database_config(self):
       return self.config['database']
 
+    def get_modules_config(self):
+        return self.config['modules']
+
 if __name__ == "__main__":
   print("config.py loaded")
   config = Config("config.yml")

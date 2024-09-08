@@ -47,15 +47,6 @@ def main():
             collector.stop()
 
 
-from m_manager import M_Manager
-
-def test():
-    module_path = "modules"
-    m = M_Manager(module_path)
-    m.load_modules()
-    m.run_modules()
-
-
 if __name__ == "__main__":
     main()
 

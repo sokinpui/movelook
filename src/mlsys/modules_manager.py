@@ -24,8 +24,8 @@ class Module_Manager:
     #             self.modules[module_name] = M
 
     # only load module that are in the config
-    def load_modules_from_config(self, config):
-        for module_name in config['modules']:
+    def load_modules_from_config(self):
+        for module_name in self.config['modules']:
             module_path = os.path.join(self.module_dir, module_name)
             if os.path.isdir(module_path) and os.path.exists(os.path.join(module_path, '__init__.py')):
                 spec = importlib.util.spec_from_file_location(module_name, os.path.join(module_path, '__init__.py'))
@@ -44,6 +44,14 @@ class Module_Manager:
             except Exception as e:
                 print(f"Error in {module_name}: {e}")
                 continue
+
+    def sort_modules_by_weight(self):
+        w_list = {}
+        for module_name in self.config['modules']:
+            w_list[module_name] = module_name['weight']
+        # sort() function here
+
+
 
 
 

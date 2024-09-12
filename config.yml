@@ -181,6 +181,8 @@ scanner:
 
 modules:
   module1:
+    # weigt higher weight will load first
+    weight: 1
     module_package_path: ""
     lookup_systems: ""
     lookup_log:

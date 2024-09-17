@@ -12,7 +12,7 @@
         # }
 import datetime
 from utils.timer import Timer
-
+# TODO: Able to search on diferent level, search in whole database, search in specific system, search in specific log
 class Scanner:
     def __init__(self, scanner_config, db):
         """

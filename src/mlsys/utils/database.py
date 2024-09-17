@@ -2,6 +2,9 @@
 from elasticsearch import Elasticsearch
 import yaml
 
+# TODO: data should be stored locally
+# TODO: another module that creeate a container for the database engine
+
 class Database:
     def __init__(self, database_config):
         # self.config = self.read_config(config_file)

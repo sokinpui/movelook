@@ -3,7 +3,6 @@
 import importlib.util
 import os
 
-
 # TODO: add load proirity to modules
 # TODO: turn on module according to config
 
@@ -12,16 +11,6 @@ class Module_Manager:
         self.modules = {}
         self.config = config
         self.modules_dir = config['modules_dir']
-
-    # def load_modules(self):
-    #     for module_name in os.listdir(self.module_dir):
-    #         module_path = os.path.join(self.module_dir, module_name)
-    #         if os.path.isdir(module_path) and os.path.exists(os.path.join(module_path, '__init__.py')):
-    #             spec = importlib.util.spec_from_file_location(module_name, os.path.join(module_path, '__init__.py'))
-    #             module = importlib.util.module_from_spec(spec)
-    #             spec.loader.exec_module(module)
-    #             M = getattr(module, 'M')
-    #             self.modules[module_name] = M
 
     # only load module that are in the config
     def load_modules_from_config(self):

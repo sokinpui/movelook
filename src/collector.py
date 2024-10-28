@@ -77,13 +77,15 @@ class Collector:
                     }
                 if (self.debug):
                     # print  log_path and lines[i] are the same
-                    print(f"Reading log file: {log_path}")
-                    # print marker
-                    print(f"Marker: {marker}")
+                    pass
                 else:
                     self.es.insert(index, doc)
             # update marker to last line
             self.__set_marker(log_path, len(lines))
+            if (self.debug):
+                print(f"Reading log file: {log_path}")
+                # print marker
+                print(f"Marker: {marker}")
 
     def __get_marker(self, log_path):
         # search the variable first, if not exist then search from database, if not exist, then create one

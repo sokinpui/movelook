@@ -47,13 +47,11 @@ class Collector:
                 self.__process_log(log_path)
 
     def __process_log(self, log_path):
-        print (f"Processing log file: {log_path}")
         marker = self.__get_marker(log_path)
         #print the log name and the system come from
 
         with open(log_path, 'r') as f:
             # self.readtime[(system, log)] = datetime.datetime.now()
-            print(f"Reading log file: {log_path}")
 
             lines = f.readlines()
 
@@ -67,7 +65,6 @@ class Collector:
 
 
             for i in range(marker, len(lines)):
-                print(lines[i])
                 # insert to database
                 index = "logs_raw"
                 doc = {
@@ -80,7 +77,9 @@ class Collector:
                     }
                 if (self.debug):
                     # print  log_path and lines[i] are the same
-                    print(f"Inserting line {lines[i]} from {log_path} to database")
+                    print(f"Reading log file: {log_path}")
+                    # print marker
+                    print(f"Marker: {marker}")
                 else:
                     self.es.insert(index, doc)
             # update marker to last line

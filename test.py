@@ -1,9 +1,8 @@
 from collector import Collector
+from scanner import Scanner
 
-c = Collector()
-c.read_config('config.yml')
-c.debug = True
-c.process()
-
-
-
+s = Scanner()
+s.read_config('config.yml')
+print(s.pattern)
+for i in s.pattern:
+    print(i)

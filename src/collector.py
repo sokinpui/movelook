@@ -15,19 +15,24 @@ class Collector:
         self.readtime = {}
         # self.timer.set_function(self.process)
         self.debug = False
+        self.is_db_set = False
         # self.marker_db_index = 'marker'
 
     def set_db(self, db):
+        if self.set_db:
+            raise Exception("Database already set")
         self.es = db
+        self.is_db_set = True
 
-    def set_function(self, function):
-        self.timer.set_function(function)
+    def set_function(self, function, *args, **kwargs):
+        self.timer.set_function(function, *args, **kwargs)
 
     def start(self):
       self.timer.start()
 
     def stop(self):
-      self.timer.stop()
+        if self.timer.function is not None:
+            self.timer.stop()
 
 # read a yml config file
     def read_config(self, config_file):
@@ -45,49 +50,48 @@ class Collector:
             for log in files:
                 log_path = os.path.join(root, log)
                 print(log_path)
-                # self.__process_log(log_path)
+                # self.process_log(log_path)
+                marker = self.__get_marker(log_path)
+                #print the log name and the system come from
 
-    def __process_log(self, log_path):
-        marker = self.__get_marker(log_path)
-        #print the log name and the system come from
+                with open(log_path, 'r') as f:
+                    # self.readtime[(system, log)] = datetime.datetime.now()
 
-        with open(log_path, 'r') as f:
-            # self.readtime[(system, log)] = datetime.datetime.now()
+                    lines = f.readlines()
 
-            lines = f.readlines()
+                    if marker == len(lines):
+                      print("No update")
+                      return
 
-            if marker == len(lines):
-              print("No update")
-              return
-
-            # reset marker if last marker is greater than No. of lines
-            if marker > len(lines):
-                marker = self.__reset_marker(log_path)
+                    # reset marker if last marker is greater than No. of lines
+                    if marker > len(lines):
+                        marker = self.__reset_marker(log_path)
 
 
-            for i in range(marker, len(lines)):
-                # insert to database
-                index = "logs_raw"
-                doc = {
-                      'line': lines[i],
-                      'path': log_path,
-                      'lineNumber': i,
-                      # 'timestamp': self.readtime[(system, log)],
-                      'timestamp': datetime.datetime.now(),
-                      'processed': False,
-                    }
-                if (self.debug):
-                    # print  log_path and lines[i] are the same
-                    pass
-                else:
-                    self.es.insert(index, doc)
+                    for i in range(marker, len(lines)):
+                        # insert to database
+                        index = "logs_raw"
+                        doc = {
+                              'line': lines[i],
+                              'path': log_path,
+                              'lineNumber': i,
+                              # 'timestamp': self.readtime[(system, log)],
+                              'timestamp': datetime.datetime.now(),
+                              'processed': False,
+                            }
+                        if (self.debug):
+                            # print  log_path and lines[i] are the same
+                            pass
+                        else:
+                            if self.is_db_set:
+                                self.es.insert(index, doc)
 
-            # update marker to last line
-            self.__set_marker(log_path, len(lines))
-            if (self.debug):
-                print(f"Reading log file: {log_path}")
-                # print marker
-                print(f"Marker: {marker}")
+                    # update marker to last line
+                    self.__set_marker(log_path, len(lines))
+                    if (self.debug):
+                        print(f"Reading log file: {log_path}")
+                        # print marker
+                        print(f"Marker: {marker}")
 
     def __get_marker(self, log_path):
         # search the variable first, if not exist then search from database, if not exist, then create one

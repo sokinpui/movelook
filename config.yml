@@ -1,30 +1,23 @@
-# log going to be watched
-collector:
-  interval: 50
-  directory: /Users/mac/work/itsc/ml/log
-
 database:
   host:
     scheme: http
     host: localhost
     port: 9200
 
+# log going to be watched
+collector:
+  index: raw_log
+  interval: 50
+  directory: /Users/mac/work/itsc/ml/log
+
+
 # search pattern
 scanner:
   index: lookup
   interval: 50
   pattern:
-
-
-modules:
-  module1:
-    # weigt higher weight will load first
-    weight: 1
-    module_package_path: ""
-    lookup_systems: ""
-    lookup_log:
-      - ""
-      - ""
-    lookup_pattern:
-    interval: 50
-    stop_tracking_after: 100
+    - "ERROR"
+    - "WARN"
+    - "INFO"
+    - "DEBUG"
+    - "TRACE"

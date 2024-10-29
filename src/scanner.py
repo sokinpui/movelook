@@ -12,26 +12,42 @@
         # }
 import datetime
 from utils.timer import Timer
-# TODO: Able to search on diferent level, search in whole database, search in specific system, search in specific log
+import yaml
+
+# TODO: different pattern should store in different index, give good index name
+
 class Scanner:
-    def __init__(self, scanner_config, db):
+    def __init__(self):
         """
         scanner_config = config['scanner']
         """
-        self.systems = scanner_config['systems']
-        self.interval = scanner_config['interval']
-        self.index = scanner_config['index']
-        self.db = db
-        self.timer = Timer(self.interval)
+        pass
 
-    def start(self, function, *args, **kwargs):
+    def read_config(self, config_file):
+        with open(config_file, 'r') as f:
+            self.config = yaml.safe_load(f)
+            self.pattern = self.config['scanner']['pattern']
+            self.interval = self.config['scanner']['interval']
+            self.index = self.config['scanner']['index']
+            self.timer = Timer(self.interval)
+
+    def set_db(self, db):
+        if self.set_db:
+            raise Exception("Database already set")
+        self.es = db
+        self.is_db_set = True
+
+    def start(self):
+      self.timer.start()
+
+    def set_function(self, function, *args, **kwargs):
         self.timer.set_function(function, *args, **kwargs)
-        self.timer.start()
 
     def stop(self):
         if self.timer.function is not None:
             self.timer.stop()
 
+    # TODO: the code below need modification
     def batch_search(self ):
         for system_name in self.systems:
             for log in self.systems[system_name]:

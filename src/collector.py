@@ -44,7 +44,8 @@ class Collector:
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)
-                self.__process_log(log_path)
+                print(log_path)
+                # self.__process_log(log_path)
 
     def __process_log(self, log_path):
         marker = self.__get_marker(log_path)
@@ -80,6 +81,7 @@ class Collector:
                     pass
                 else:
                     self.es.insert(index, doc)
+
             # update marker to last line
             self.__set_marker(log_path, len(lines))
             if (self.debug):

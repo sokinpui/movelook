@@ -15,18 +15,14 @@ insightEngine:
   interval: 50
 
   cpu_overload:
-    pattern:
-      - "CPU Overload"
+    patterns: [
+      "CPU Overload", "CPU Full", "CPU Space Full"
+    ]
+    action: "email"
 
   memory_full:
-    pattern:
-      - operation: and
-      - "Memory Full"
-      - "Memory Space Full"
-      - "Memory Overload"
-
-  # disk_full:
-  #   pattern:
-  #     - "Disk Full"
-  #     - "Disk Space Full"
-  #
+    patterns: [
+      "Memory Full", "Memory Space Full"
+    ]
+    operator: "OR"
+    action: "email"

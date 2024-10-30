@@ -7,6 +7,13 @@ def load_config(file_path):
 config = load_config('config.yml')
 config = config['insightEngine']
 
+for insight, query in config.items():
+    if insight == 'interval':
+        continue
+    # join the pattern with the operation, and state which insight it belongs to
+    # use a one line code to solve without call the parser function
+    print(f"{insight}: {(', '.join(p for p in query['patterns']))}")
+
 def parser(query):
     p = query['pattern']
     # if p[0] is a dict and their is a key "operation" in it:
@@ -21,10 +28,10 @@ def and_operation(p):
     # concatate the pattern with "and"
     return ' and '.join(p for p in patterns if p != 'operation')
 
-for query in config:
-    # skip if it is "interval"
-    if query == 'interval':
-        continue
-    print(parser(config[query]))
-
-
+# for query in config:
+#     # skip if it is "interval"
+#     if query == 'interval':
+#         continue
+#     print(parser(config[query]))
+#
+#

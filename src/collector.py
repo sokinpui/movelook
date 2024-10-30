@@ -19,7 +19,7 @@ class Collector:
         # self.marker_db_index = 'marker'
 
     def set_db(self, db):
-        if self.set_db:
+        if self.is_db_set:
             raise Exception("Database already set")
         self.es = db
         self.is_db_set = True
@@ -75,7 +75,6 @@ class Collector:
                               'line': lines[i],
                               'path': log_path,
                               'lineNumber': i,
-                              # 'timestamp': self.readtime[(system, log)],
                               'timestamp': datetime.datetime.now(),
                               'processed': False,
                             }
@@ -94,44 +93,11 @@ class Collector:
                         print(f"Marker: {marker}")
 
     def __get_marker(self, log_path):
-        # search the variable first, if not exist then search from database, if not exist, then create one
-        # marker = self.marker.get((system, log), -1)
-        # if marker == -1:
-        #     # search from database
-        #     # get the last line number
-        #     query = {
-        #   "query": {
-        #     "bool": {
-        #       "must": [
-        #         {"match": {"system": system}},
-        #         {"match": {"log": log}}
-        #         ]
-        #       }
-        #     }
-        #   }
-        #     res = self.es.es.search(index=self.marker_db_index, body=query)
-        #     if res['hits']['total']['value'] > 0:
-        #         marker = res['hits']['hits'][0]['_source']['details']['line']
-        #         self.marker[(system, log)] = marker
-        #         print(f"Get marker from database: {marker}")
-        #     else:
-        #         self.marker[(system, log)] = 0
-        #         print(f"Create new marker: 0")
         return self.marker.get(log_path, 0)
 
     def __set_marker(self, log_path, marker):
         self.marker[log_path] = marker
         print(f"Set marker to {marker}")
-        # # set markder in new index
-        # doc = {
-        #     'system': system,
-        #     'log': log,
-        #     'details': {
-        #       'line': marker,
-        #       'timestamp': datetime.datetime.now(),
-        #       }
-        #     }
-        # self.es.insert(self.marker_db_index, doc)
 
     def __reset_marker(self, log_path):
         self.marker[log_path] = 0

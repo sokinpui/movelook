@@ -6,18 +6,27 @@ database:
 
 # log going to be watched
 collector:
-  index: raw_log
   interval: 50
   directory: /Users/mac/work/itsc/ml/log
 
 
-# search pattern
-scanner:
-  index: lookup
+# search pattern error/msg raise in log, may be more than one
+insightEngine:
   interval: 50
-  pattern:
-    - "ERROR"
-    - "WARN"
-    - "INFO"
-    - "DEBUG"
-    - "TRACE"
+
+  cpu_overload:
+    pattern:
+      - "CPU Overload"
+
+  memory_full:
+    pattern:
+      - operation: and
+      - "Memory Full"
+      - "Memory Space Full"
+      - "Memory Overload"
+
+  # disk_full:
+  #   pattern:
+  #     - "Disk Full"
+  #     - "Disk Space Full"
+  #

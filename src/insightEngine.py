@@ -1,24 +1,41 @@
 import datetime
 from utils.timer import Timer
 import yaml
+from config import *
 
-def __handle_operation(search_query, op):
-    # concatate the pattern with "and"
-    return f' {op} '.join(p for p in search_query['patterns'])
+operator = { 'and': 'must', 'or': 'should' }
 
-def __parser_to_doc(queries):
+def handle_operation(search_query, op):
+    # Extract patterns from the search query
+    patterns = search_query.get('patterns', [])
+
+    # Use a 'must' clause for 'and' operator (all patterns must match)
+    query = {
+        "bool": {
+            operator[op]: []
+        }
+    }
+    for pattern in patterns:
+        query["bool"]["must"].append({
+            "regex": {
+                "field_name": pattern  # Replace 'field_name' with the actual field you want to search
+            }
+        })
+    return query
+
+def parser_to_doc(queries):
     doc = {}
     for insight_group, search_query in queries.items():
         print(search_query)
-        if 'operation' in search_query:
-            if search_query['operation'] == 'and':
+        if 'operator' in search_query:
+            if search_query['operator'] == 'and':
                 # append to the doc with the key as the insight name
-                doc[insight_group] = __handle_operation(search_query, "and")
-            elif search_query['operation'] == 'or':
+                doc[insight_group] = handle_operation(search_query, "and")
+            elif search_query['operator'] == 'or':
                 # append to the doc with the key as the insight name
-                doc[insight_group] = __handle_operation(search_query, "or")
+                doc[insight_group] = handle_operation(search_query, "or")
         else:
-            doc[insight_group] = __handle_operation(search_query, "or")
+            doc[insight_group] = handle_operation(search_query, "or")
     return doc
 
 
@@ -54,7 +71,13 @@ class InsightEngine:
             self.timer.stop()
 
     def search_all_pattern(self):
-        patterns = __parser_to_doc(self.queries)
+        es_search_queries = parser_to_doc(self.queries)
+        for insight_group, query in es_search_queries.items():
+            query = {
+                "query": query
+            }
+            res = self.es.search(index="raw_log", body=query)
+            print(res)
         pass
 
     def search_pattern(self, target):

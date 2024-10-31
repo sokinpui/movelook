@@ -22,4 +22,4 @@ insight:
     patterns: [
       "Memory Full", "Memory Space Full"
     ]
-    operation: "and"
+    operator: "and"

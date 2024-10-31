@@ -18,11 +18,9 @@ insightEngine:
     patterns: [
       "CPU Overload", "CPU Full", "CPU Space Full"
     ]
-    action: "email"
 
   memory_full:
     patterns: [
       "Memory Full", "Memory Space Full"
     ]
     operator: "OR"
-    action: "email"

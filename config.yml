@@ -11,16 +11,15 @@ collector:
 
 
 # search pattern error/msg raise in log, may be more than one
-insightEngine:
+insight:
   interval: 50
 
   cpu_overload:
     patterns: [
-      "CPU Overload", "CPU Full", "CPU Space Full"
-    ]
+      "CPU Overload", "CPU Full", "CPU Space Full" ]
 
   memory_full:
     patterns: [
       "Memory Full", "Memory Space Full"
     ]
-    operator: "OR"
+    operation: "and"

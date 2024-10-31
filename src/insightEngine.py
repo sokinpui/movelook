@@ -2,19 +2,25 @@ import datetime
 from utils.timer import Timer
 import yaml
 
-def __and_operation(patterns):
-    patterns = patterns[1:]
+def __handle_operation(search_query, op):
     # concatate the pattern with "and"
-    return ' and '.join(p for p in patterns if p != 'operation')
+    return f' {op} '.join(p for p in search_query['patterns'])
 
-def __parser(query):
-    p = query['pattern']
-    # if p[0] is a dict and their is a key "operation" in it:
-    if isinstance(p[0], dict) and 'operation' in p[0]:
-        # if operation is "and"
-        if p[0]['operation'] == 'and':
-            return __and_operation(p)
-    return ' or '.join(p for p in query['pattern'])
+def __parser_to_doc(queries):
+    doc = {}
+    for insight_group, search_query in queries.items():
+        print(search_query)
+        if 'operation' in search_query:
+            if search_query['operation'] == 'and':
+                # append to the doc with the key as the insight name
+                doc[insight_group] = __handle_operation(search_query, "and")
+            elif search_query['operation'] == 'or':
+                # append to the doc with the key as the insight name
+                doc[insight_group] = __handle_operation(search_query, "or")
+        else:
+            doc[insight_group] = __handle_operation(search_query, "or")
+    return doc
+
 
 # TODO: different pattern should store in different index, give good index name
 
@@ -26,7 +32,7 @@ class InsightEngine:
     def read_config(self, config_file):
         with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
-            self.queries = self.config['insightEngine']
+            self.queries = self.config['insightEngine'].pop('interval', None)
             self.interval = self.config['insightEngine']['interval']
             self.index = self.config['insightEngine']['index']
             self.timer = Timer(self.interval)
@@ -47,10 +53,11 @@ class InsightEngine:
         if self.timer.function is not None:
             self.timer.stop()
 
-    def search(self):
+    def search_all_pattern(self):
+        patterns = __parser_to_doc(self.queries)
         pass
 
-    def pattern_search(self, target):
+    def search_pattern(self, target):
         pass
 
   # mark processed flag as true

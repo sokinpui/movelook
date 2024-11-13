@@ -1,7 +1,7 @@
 import datetime
 from utils.timer import Timer
 import yaml
-from config import *
+import gbvar
 
 operator = { 'and': 'must', 'or': 'should' }
 
@@ -70,18 +70,19 @@ class InsightEngine:
         if self.timer.function is not None:
             self.timer.stop()
 
-    def search_all_pattern(self):
+    # TODO: filter the data within one day
+    def search_in_es(self):
         es_search_queries = parser_to_doc(self.queries)
         for insight_group, query in es_search_queries.items():
             query = {
                 "query": query
             }
-            res = self.es.search(index="raw_log", body=query)
-            print(res)
-        pass
-
-    def search_pattern(self, target):
-        pass
+            try:
+                res = self.es.search(index=gbvar.raw_log_index, body=query)
+                return res
+            # raise exception if database not set
+            except Exception:
+                raise Exception("Database not set")
 
   # mark processed flag as true
     def mark_processed(self):

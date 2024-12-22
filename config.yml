@@ -11,15 +11,18 @@ collector:
 
 
 # search pattern error/msg raise in log, may be more than one
-insight:
-  interval: 50
+patterns:
+  regex:
+    - name: "Error Patterns"
+      pattern: "ERROR: (.*)"
+      action: "log_warning"
+    - name: "Warning Patterns"
+      pattern: "WARNING: (.*)"
+      action: "log_warning"
 
-  cpu_overload:
-    patterns: [
-      "CPU Overload", "CPU Full", "CPU Space Full" ]
 
-  memory_full:
-    patterns: [
-      "Memory Full", "Memory Space Full"
-    ]
-    operator: "and"
+actions:
+  log_warning:
+    description: "Log a warning message"
+  send_alert:
+    description: "Send an alert to the monitoring system"

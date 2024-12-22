@@ -9,6 +9,10 @@ from es_client import ESClient
 # read from last marker + 1
 # reset marker if last marker is greater than max line
 
+with open('config.yml', 'r') as f:
+    config = yaml.safe_load(f)
+    index = config["collector"]["index"]
+    f.close()
 
 class Collector:
     def __init__(self):

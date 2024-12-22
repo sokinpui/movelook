@@ -1,7 +1,6 @@
 import datetime
 from .timer import Timer
 import yaml
-import gbvar
 from elasticsearch import Elasticsearch, helpers
 from es_client import ESClient
 
@@ -47,9 +46,14 @@ valid_timestamp_range = 7
 
 # TODO: different pattern should store in different index, give good index name
 
-class InsightEngine:
+with open('config.yml', 'r') as f:
+    config = yaml.safe_load(f)
+    interval = config['extractor']['interval']
+    f.close()
+
+class Extractor:
     def __init__(self):
-        self.interval = 10
+        self.interval = interval
         self.timer = Timer(self.interval)
         self.es_client = ESClient.get_instance()
 

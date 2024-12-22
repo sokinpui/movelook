@@ -1,0 +1,6 @@
+collector:
+  - index: "raw_log_file"
+    interval: 10
+
+extractor:
+  - interval: 10

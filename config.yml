@@ -6,7 +6,6 @@ database:
 
 # log going to be watched
 collector:
-  interval: 50
   directory: /Users/mac/work/itsc/ml/log
 
 
@@ -23,6 +22,6 @@ patterns:
 
 actions:
   log_warning:
-    description: "Log a warning message"
+    descr: "Log a warning message"
   send_alert:
-    description: "Send an alert to the monitoring system"
+    descr: "Send an alert to the monitoring system"

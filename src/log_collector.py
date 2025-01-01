@@ -9,36 +9,33 @@ from es_client import ESClient
 # read from last marker + 1
 # reset marker if last marker is greater than max line
 
-with open('config.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    index = config["collector"]["index"]
-    f.close()
+try:
+    with open('config.yml', 'r') as f:
+        config = yaml.safe_load(f)
+        index = config["collector"]["index"]
+except FileNotFoundError:
+    print("Error: config.yml file not found.")
+except KeyError as e:
+    print(f"Error: Missing key in config.yml: {e}")
+except yaml.YAMLError as exc:
+    print(f"Error parsing YAML: {exc}")
+
 
 class Collector:
-    def __init__(self):
+    def __init__(self, config):
         self.marker = {}
         self.readtime = {}
         # self.timer.set_function(self.process)
         # self.marker_db_index = 'marker'
         self.es_client = ESClient.get_instance()
+        self.read_config(config)
 
-    def set_function(self, function, *args, **kwargs):
-        self.timer.set_function(function, *args, **kwargs)
-
-    def start(self):
-      self.timer.start()
-
-    def stop(self):
-        if self.timer.function is not None:
-            self.timer.stop()
 
 # read a yml config file
     def read_config(self, config_file):
         with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
             self.directory = self.config['collector']['directory']
-            self.interval = self.config['collector']['interval']
-            self.timer = Timer(self.interval)
 
 # read all the log file in self.directory recursively
 # the log files may appear in different subdirectories

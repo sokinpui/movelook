@@ -30,9 +30,10 @@ class Timer(object):
         self.kwargs = kwargs
 
     def stop(self):
-        if self.is_running:
-            self._timer.cancel()
-            self.is_running = False
+        if self.set_function is not None:
+            if self.is_running:
+                self._timer.cancel()
+                self.is_running = False
 
     # def every(self):
     #       next_time = time.time() + self.interval

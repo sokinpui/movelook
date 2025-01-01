@@ -4,3 +4,13 @@ collector:
 
 extractor:
   - interval: 10
+
+action_hanlder:
+  - index: "action"
+    interval: 10
+
+cleaner:
+  - index: "buffer"
+    # in days
+    interval: 1
+

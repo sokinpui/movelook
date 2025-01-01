@@ -11,6 +11,11 @@ class ActionHandler:
     def __init__(self, config):
         self.config = config
         self.es_client = ESClient.get_instance()
+        self.get_config(config)
+
+    def get_config(self, config_path):
+        with open(config_path, 'r') as file:
+            self.config = yaml.safe_load(file)
 
     def check_messages(self):
         # Query Elasticsearch index for messages

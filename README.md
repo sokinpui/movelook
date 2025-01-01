@@ -9,3 +9,7 @@ extract pattern from raw log
 
 # section3: action respone to extracted pattern
 response to extracted pattern
+
+---
+
+! [Flow of the proram](./attachment/arch.png

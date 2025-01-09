@@ -24,6 +24,7 @@ class Timer(object):
             self._timer.start()
             self.is_running = True
 
+    # set the function to be called
     def set_function(self, function, *args, **kwargs):
         self.function = function
         self.args = args

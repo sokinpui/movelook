@@ -17,6 +17,7 @@ class ActionHandler:
         with open(config_path, 'r') as file:
             self.config = yaml.safe_load(file)
 
+    # check if there is messageg in the index, if so, handle the action accordingly
     def check_messages(self):
         # Query Elasticsearch index for messages
         index = 'logs'  # Replace with your log index name
@@ -40,10 +41,12 @@ class ActionHandler:
         elif message == "send_alert":
             self.send_alert(message)
 
+    # example action handlers
     def log_warning(self, message):
         logging.warning(f"Warning logged: {message}")
         self.es_client.index(index='warnings', body={"message": message})
 
+    # example action handlers
     def send_alert(self, message):
         logging.info(f"Alert sent: {message}")
         # Implement actual alert sending logic here

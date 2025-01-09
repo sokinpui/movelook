@@ -3,6 +3,7 @@ from elasticsearch import Elasticsearch
 class ESClient:
     _instance = None
 
+    # ensure only one instance of ESClient is created
     @staticmethod
     def get_instance():
         if ESClient._instance is None:

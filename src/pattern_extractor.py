@@ -24,16 +24,8 @@ class Extractor:
         with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
 
-    def start(self):
-      self.timer.start()
-
-    def set_function(self, function, *args, **kwargs):
-        self.timer.set_function(function, *args, **kwargs)
-
-    def stop(self):
-        if self.timer.function is not None:
-            self.timer.stop()
-
+    # search for patterns in the logs and then insert them into the index
+    # insert the message into the action index if the pattern is found
     def regex_search(self):
         regex_patterns = self.config['patterns']['regex']
 

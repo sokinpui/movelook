@@ -20,6 +20,7 @@ class BufferManager:
         with open(config_path, 'r') as file:
             self.config = yaml.safe_load(file)
 
+    # move data from source index to destination index
     def move_data(self, source, dest):
         cutoff_date = datetime.now() - self.retention_period
 
@@ -39,6 +40,7 @@ class BufferManager:
             }
         })
 
+        # Check if any documents were moved
         if reindex_response['total'] > 0:
             print(f"Moved {reindex_response['total']} entries to buffer.")
 
@@ -57,9 +59,11 @@ class BufferManager:
         else:
             print("No documents to move.")
 
+    # move data from the index to the buffer
     def move_to_buffer(self):
         self.move_data(index_to_cleanup, buffer_index)
 
+    # cleanup the buffer after the retention period
     def cleanup_buffer(self):
         self.move_data(buffer_index, "trash")
         # Cleanup the trash index

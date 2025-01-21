@@ -9,12 +9,15 @@ import sys
 
 import config_checker
 import start_elasticsearch
+import ollama_llm
+
 import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='ml.log', format='%(levelname)s: %(asctime) %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 
 config_checker.config_checker()
 start_elasticsearch.start_elasticsearch()
+ollama_llm.start_ollama()
 
 # $HOME/.config/ml/config.yml
 config = '$HOME/.config/ml/config.yml'

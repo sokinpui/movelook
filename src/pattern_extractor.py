@@ -1,10 +1,14 @@
 import datetime
+
+from pydantic import Json, NonNegativeFloat
 from .timer import Timer
 import yaml
 from elasticsearch import Elasticsearch, helpers
 from es_client import ESClient
 
 valid_timestamp_range = 7
+
+from ollama import chat, ChatResponse
 
 # TODO: different pattern should store in different index, give good index name
 
@@ -65,10 +69,10 @@ class Extractor:
             else:
                 print("No documents to insert")
 
-            regex_match_indices.append(index)
 
             # put message if pattern is found
             if response['hits']['total']['value'] > 0:
+                regex_match_indices.append(index)
                 msg = {
                     "timestamp": datetime.datetime.now(),
                     "action": action,
@@ -77,3 +81,43 @@ class Extractor:
                 self.es_client.index(index=action_msg_index, body=msg)
 
         return regex_match_indices
+
+    def llm_search(self):
+        llm_searches = self.config['patterns']['llm']
+        # positive means llm agent answer yes to the question
+        positives = []
+
+        for prompt_obj in llm_searches:
+            name = prompt_obj['name']
+            content = prompt_obj['prompt']
+            action = prompt_obj['action']
+
+            # concatenate all the file into one string within 128k characters
+            # files = concatenate_files_in_es()
+            files = None
+
+            # or use another llm agent to decide should a alert msg to be inserted
+            response : ChatResponse = chat(model="llama3.2:3b", messages=[
+                {
+                    'role': 'user',
+                    'content': f'answer either "yes" or "no"\ncontext/files/text:{files} \nquestion: {content}\n'
+                    }
+                ])
+
+            answer = response['message']['content']
+            if 'yes' in answer or "Yes" in answer:
+                # mark the name since it is positives
+                # consist the name to lower case to es regex search implementation
+                # TODO: insert the prompt to elasticsearch?
+                positives.append(name.lower())
+                # store the message
+                msg = {
+                    "timestamp": datetime.datetime.now(),
+                    "action": action,
+                    "message": name
+                }
+                self.es_client.index(index=action_msg_index, body=msg)
+
+        return positives
+
+

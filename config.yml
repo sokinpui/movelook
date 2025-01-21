@@ -8,6 +8,7 @@ database:
 collector:
   directory: /Users/mac/work/itsc/ml/log
 
+llm_model: "llama3.2:3b"
 
 # search pattern error/msg raise in log, may be more than one
 patterns:
@@ -18,6 +19,10 @@ patterns:
     - name: "Warning Patterns"
       pattern: "WARNING: (.*)"
       action: "log_warning"
+  llm:
+    - name: "storae space richness check"
+      prompt: "does the disk going to full (>90%)?"
+      action: "send_alert"
 
 
 actions:

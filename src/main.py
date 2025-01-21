@@ -9,6 +9,9 @@ import sys
 
 import config_checker
 import start_elasticsearch
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='ml.log', format='%(levelname)s: %(asctime) %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 
 config_checker.config_checker()
 start_elasticsearch.start_elasticsearch()
@@ -22,9 +25,32 @@ action_handler = ActionHandler(config)
 move2buffer = BufferManager(config)
 trash_cleaner = BufferManager(config)
 
-collector.process()
-extractor.regex_search()
-action_handler.check_messages()
+def main():
+    try:
+        while True:
+            # logging with timestamp
+            logger.info('Starting the main process...')
+            logger.info('Collector process started...')
+            collector.process()
+            logger.info('Collector process completed...')
+            logger.info('Extractor process started...')
+            extractor.regex_search()
+            logger.info('Extractor process completed...')
+            logger.info('Action Handler process started...')
+            action_handler.check_messages()
+
+    except KeyboardInterrupt:
+        print('Exiting...')
+        logger.info('Exiting...')
+        sys.exit(0)
+    except Exception as e:
+        print(f'An error occurred: {e}')
+        logger.error(f'An error occurred: {e}')
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
 
 # can be configured in the config file
 # collector_timer = Timer(5 * 60)  # 5 minutes

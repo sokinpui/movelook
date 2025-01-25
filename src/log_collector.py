@@ -1,8 +1,8 @@
 import yaml
 import datetime
 import os
-from .timer import Timer
-from es_client import ESClient
+from ptimer import Timer
+# from es_client import ESClient
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
@@ -12,7 +12,6 @@ from es_client import ESClient
 try:
     with open('config.yml', 'r') as f:
         config = yaml.safe_load(f)
-        index = config["collector"]["index"]
 except FileNotFoundError:
     print("Error: config.yml file not found.")
 except KeyError as e:
@@ -20,6 +19,15 @@ except KeyError as e:
 except yaml.YAMLError as exc:
     print(f"Error parsing YAML: {exc}")
 
+import json
+from pprint import pprint
+import os
+import time
+
+# from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+
+# load_dotenv()
 
 class Collector:
     def __init__(self, config):
@@ -27,7 +35,10 @@ class Collector:
         self.readtime = {}
         # self.timer.set_function(self.process)
         # self.marker_db_index = 'marker'
-        self.es_client = ESClient.get_instance()
+        self.es = Elasticsearch('http://localhost:9200')
+        client_info = self.es.info()
+        print('Connected to Elasticsearch!')
+        pprint(client_info)
         self.read_config(config)
 
 
@@ -41,6 +52,8 @@ class Collector:
 # the log files may appear in different subdirectories
 # get their path recursively
     def process(self):
+        print(f"Processing logs in {self.directory}")
+        index = "logs_raw"
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)
@@ -65,9 +78,9 @@ class Collector:
 
                     for i in range(marker, len(lines)):
                         # insert to database
-                        index = "logs_raw"
                         doc = {
                               'line': lines[i],
+                              'line_length': len(lines[i]),
                               'path': log_path,
                               'lineNumber': i,
                               'timestamp': datetime.datetime.now(),

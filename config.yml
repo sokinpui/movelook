@@ -6,7 +6,7 @@ database:
 
 # log going to be watched
 collector:
-  directory: /Users/mac/work/itsc/ml/log
+  directory: /Users/mac/work/ml/log
 
 llm_model: "llama3.2:3b"
 
@@ -14,10 +14,10 @@ llm_model: "llama3.2:3b"
 patterns:
   regex:
     - name: "Error Patterns"
-      pattern: "ERROR: (.*)"
+      pattern: "1.*1"
       action: "log_warning"
     - name: "Warning Patterns"
-      pattern: "WARNING: (.*)"
+      pattern: ".*state.*"
       action: "log_warning"
   llm:
     - name: "storae space richness check"

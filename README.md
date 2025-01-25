@@ -1,15 +1,23 @@
-a log watching system
-this system is separated bythree section
+# MoveLook system
+text data analysis tools
+## work flow of the system
+1. collect data into database
+2. analyze collected data base on user defined rules
+  - 2.1 Analysis agent:
+    - regex search given by user
+    - LLM search, answer user's prompt
+3. Further actinos base on the analysis results
 
-# section 1: log collection
-collect log from directory
+## requirements
+- ollama(LLM deploy locally)
+- elasticsearch(database)
 
-# section2: pattern insight from raw log
-extract pattern from raw log
+## LLM support
+Support different LLM model as long as ollama support it
 
-# section3: action respone to extracted pattern
-response to extracted pattern
-
----
-
-! [Flow of the proram](./attachment/arch.png)
+# WIP
+- [ ] support differnt database
+- [ ] extends data types support
+- [ ] support plugin system for new analysis agent attached
+- [ ] accuracy test for LLM analysis agent
+- [ ] support for supar large size data(longer than LLM's context length)

@@ -1,3 +1,4 @@
+# TODO: WIP not in use yet
 # start singularity container with elasticsearch
 
 import subprocess

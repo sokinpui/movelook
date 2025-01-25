@@ -1,27 +1,33 @@
 import datetime
 
 from pydantic import Json, NonNegativeFloat
-from .timer import Timer
+from ptimer import Timer
 import yaml
 from elasticsearch import Elasticsearch, helpers
-from es_client import ESClient
+# from es_client import ESClient
 
 valid_timestamp_range = 7
 
 from ollama import chat, ChatResponse
 
+# llm chat helper function
+def llm_chat(model, prompt):
+    response : ChatResponse = chat(model=model, messages=[{
+            'role': 'user',
+            'content': prompt
+        }
+    ])
+    return response
+
 # TODO: different pattern should store in different index, give good index name
+action_msg_index = "action_msg"
 
 with open('config.yml', 'r') as f:
     config = yaml.safe_load(f)
-    interval = config['extractor']['interval']
-    action_msg_index = config['action_hanlder']['index']
 
 class Extractor:
     def __init__(self, config):
-        self.interval = interval
-        self.timer = Timer(self.interval)
-        self.es_client = ESClient.get_instance()
+        self.es = Elasticsearch('http://localhost:9200')
         self.read_config(config)
 
     def read_config(self, config_file):
@@ -47,12 +53,14 @@ class Extractor:
               }
             }
             # :TODO: make "logs_raw" a Global variable
-            response = self.es_client.search(index="logs_raw", body=query)
+            print(f"Searching for {name} pattern")
+            response = self.es.search(index="logs_raw", body=query)
 
             # convert all space to underscore and lowercase
             index = name.replace(" ", "_").lower()
-            if not self.es_client.indices.exists(index=index):
-                self.es_client.indices.create(index=index)
+            if not self.es.indices.exists(index=index):
+                print(f"Creating index {index}")
+                self.es.indices.create(index=index)
 
             # store matched logs
             actions = []
@@ -62,9 +70,11 @@ class Extractor:
                     "_id": hit['_id'],  # Optional: preserve the original document ID
                     "_source": hit['_source']
                 }
+                # print matched logs_raw
+                print(hit['_source']['line'])
                 actions.append(action)
             if actions:
-                helpers.bulk(self.es_client, actions)
+                helpers.bulk(self.es, actions)
                 print(f"Inserted {len(actions)} documents")
             else:
                 print("No documents to insert")
@@ -78,7 +88,7 @@ class Extractor:
                     "action": action,
                     "message": name
                 }
-                self.es_client.index(index=action_msg_index, body=msg)
+                self.es.index(index=action_msg_index, body=msg)
 
         return regex_match_indices
 
@@ -94,17 +104,14 @@ class Extractor:
 
             # concatenate all the file into one string within 128k characters
             # files = concatenate_files_in_es()
-            files = None
+            related_text = None
 
             # or use another llm agent to decide should a alert msg to be inserted
-            response : ChatResponse = chat(model="llama3.2:3b", messages=[
-                {
-                    'role': 'user',
-                    'content': f'answer either "yes" or "no"\ncontext/files/text:{files} \nquestion: {content}\n'
-                    }
-                ])
+            prompt = f'answer either "yes" or "no"\ncontext/files/text:{related_text} \nquestion: {content}\n'
+            response = llm_chat("llama3.2:3b", prompt)
 
             answer = response['message']['content']
+
             if 'yes' in answer or "Yes" in answer:
                 # mark the name since it is positives
                 # consist the name to lower case to es regex search implementation
@@ -116,8 +123,34 @@ class Extractor:
                     "action": action,
                     "message": name
                 }
-                self.es_client.index(index=action_msg_index, body=msg)
+                self.es.index(index=action_msg_index, body=msg)
 
         return positives
+
+
+    # TODO: how to feed text longer than context length
+
+    def filter_related(self, question):
+        related_files = []
+
+        # fetch all file nmaes from es
+        query = {
+                "aggs": {
+                    "unique_files": {
+                        "terms": {
+                            "field": "path"
+                        }
+                    }
+                }
+            }
+        response = self.es.search(index="logs_raw", body=query)
+        files = []
+        for file in response['aggregations']['unique_files']['buckets']:
+            files.append(file['key'])
+
+        prompt = f'return a python list to me\nQuestion: {question}\nFiles: {related_files}'
+        related_files = llm_chat("llama3.2:3b", prompt)
+
+        return related_files
 
 

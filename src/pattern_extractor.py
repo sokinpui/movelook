@@ -4,7 +4,7 @@ from pydantic import Json, NonNegativeFloat
 from ptimer import Timer
 import yaml
 from elasticsearch import Elasticsearch, helpers
-# from es_client import ESClient
+from es_client import ESClient
 
 valid_timestamp_range = 7
 
@@ -27,7 +27,7 @@ with open('config.yml', 'r') as f:
 
 class Extractor:
     def __init__(self, config):
-        self.es = Elasticsearch('http://localhost:9200')
+        self.es = ESClient().get_instance()
         self.read_config(config)
 
     def read_config(self, config_file):

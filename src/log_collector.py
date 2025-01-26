@@ -2,7 +2,7 @@ import yaml
 import datetime
 import os
 from ptimer import Timer
-# from es_client import ESClient
+from es_client import ESClient
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
@@ -35,7 +35,7 @@ class Collector:
         self.readtime = {}
         # self.timer.set_function(self.process)
         # self.marker_db_index = 'marker'
-        self.es = Elasticsearch('http://localhost:9200')
+        self.es = ESClient().get_instance()
         client_info = self.es.info()
         print('Connected to Elasticsearch!')
         pprint(client_info)

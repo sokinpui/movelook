@@ -1,21 +1,15 @@
 from elasticsearch import Elasticsearch
 
-class ESClient:
-    _instance = None
+# TODO: work with ES security and authentication, cert and key files
 
-    # ensure only one instance of ESClient is created
-    @staticmethod
-    def get_instance():
-        if ESClient._instance is None:
-            print("Creating ESClient instance")
-            ESClient()
-        return ESClient._instance
+
+class ESClient:
 
     def __init__(self):
-        if ESClient._instance is not None:
-            raise Exception("This class is a singleton!")
-        else:
-            ESClient._instance = Elasticsearch(['http://localhost:9200'])  # Update with your ES details
+        # self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        self.instance = None
 
-# Usage
-# es_client = ESClient.get_instance()
+    def get_instance(self):
+        self.instance = Elasticsearch('http://localhost:9200')
+
+        return self.instance

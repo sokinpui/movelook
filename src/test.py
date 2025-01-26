@@ -50,9 +50,6 @@ docker_command = [
 #     print(f"Error occurred: {e}")
 
 
-from es_client import ESClient
-
-# es_client = ESClient.get_instance()
 
 
 home_dir = os.getenv('HOME')

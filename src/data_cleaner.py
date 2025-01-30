@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
 import yaml
-from es_client import ESClient
+from es_engine import ESClient
 
 with open('config.yml', 'r') as f:
     config = yaml.safe_load(f)

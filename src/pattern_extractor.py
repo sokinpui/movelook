@@ -4,7 +4,7 @@ from pydantic import Json, NonNegativeFloat
 from ptimer import Timer
 import yaml
 from elasticsearch import Elasticsearch, helpers
-from es_client import ESClient
+from es_engine import ESClient
 
 valid_timestamp_range = 7
 
@@ -22,8 +22,8 @@ def llm_chat(model, prompt):
 # TODO: different pattern should store in different index, give good index name
 action_msg_index = "action_msg"
 
-with open('config.yml', 'r') as f:
-    config = yaml.safe_load(f)
+# with open('config.yml', 'r') as f:
+#     config = yaml.safe_load(f)
 
 class Extractor:
     def __init__(self, config):

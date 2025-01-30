@@ -2,22 +2,22 @@ import yaml
 import datetime
 import os
 from ptimer import Timer
-from es_client import ESClient
+from es_engine import ESClient
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
 # set a marker to mark the last line that has been read
 # read from last marker + 1
 # reset marker if last marker is greater than max line
 
-try:
-    with open('config.yml', 'r') as f:
-        config = yaml.safe_load(f)
-except FileNotFoundError:
-    print("Error: config.yml file not found.")
-except KeyError as e:
-    print(f"Error: Missing key in config.yml: {e}")
-except yaml.YAMLError as exc:
-    print(f"Error parsing YAML: {exc}")
+# try:
+#     with open('config.yml', 'r') as f:
+#         config = yaml.safe_load(f)
+# except FileNotFoundError:
+#     print("Error: config.yml file not found.")
+# except KeyError as e:
+#     print(f"Error: Missing key in config.yml: {e}")
+# except yaml.YAMLError as exc:
+#     print(f"Error parsing YAML: {exc}")
 
 import json
 from pprint import pprint

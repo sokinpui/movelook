@@ -1,5 +1,5 @@
 import logging
-from es_client import ESClient
+from es_engine import ESClient
 import yaml
 from elasticsearch import Elasticsearch
 

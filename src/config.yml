@@ -1,16 +1,28 @@
+docker:
+  container_name: es01
+  image: "docker.elastic.co/elasticsearch/elasticsearch:8.17.1"
+  network_name: elastic
+  ports:
+    9200/tcp: 9200
+  environment:
+    discovery.type: single-node
+    xpack.security.enabled: false
+    xpack.license.self_generated.type: trial
+
+
 collector:
-  - index: "raw_log_file"
+  - index: raw_log_file
     interval: 10
 
 extractor:
   - interval: 10
 
 action_hanlder:
-  - index: "action"
+  - index: action
     interval: 10
 
 cleaner:
-  - index: "buffer"
+  - index: buffer
     # in days
     interval: 1
 

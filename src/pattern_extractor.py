@@ -3,7 +3,8 @@ import datetime
 from pydantic import Json, NonNegativeFloat
 from ptimer import Timer
 import yaml
-from elasticsearch import Elasticsearch, helpers
+import os
+from elasticsearch import helpers
 from es_engine import ESClient
 
 valid_timestamp_range = 7
@@ -11,7 +12,7 @@ valid_timestamp_range = 7
 from ollama import chat, ChatResponse
 
 # llm chat helper function
-def llm_chat(model, prompt):
+def _llm_chat(model, prompt):
     response : ChatResponse = chat(model=model, messages=[{
             'role': 'user',
             'content': prompt
@@ -19,11 +20,13 @@ def llm_chat(model, prompt):
     ])
     return response
 
-# TODO: different pattern should store in different index, give good index name
-action_msg_index = "action_msg"
 
-# with open('config.yml', 'r') as f:
-#     config = yaml.safe_load(f)
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(dir_path, 'config.yml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+action_queue_index = config['action_hanlder']['index']
+search_index = config['collector']['index']
 
 class Extractor:
     def __init__(self, config):
@@ -54,7 +57,7 @@ class Extractor:
             }
             # :TODO: make "logs_raw" a Global variable
             print(f"Searching for {name} pattern")
-            response = self.es.search(index="logs_raw", body=query)
+            response = self.es.search(index=search_index, body=query)
 
             # convert all space to underscore and lowercase
             index = name.replace(" ", "_").lower()
@@ -88,7 +91,7 @@ class Extractor:
                     "action": action,
                     "message": name
                 }
-                self.es.index(index=action_msg_index, body=msg)
+                self.es.index(index=action_queue_index, body=msg)
 
         return regex_match_indices
 
@@ -108,7 +111,7 @@ class Extractor:
 
             # or use another llm agent to decide should a alert msg to be inserted
             prompt = f'answer either "yes" or "no"\ncontext/files/text:{related_text} \nquestion: {content}\n'
-            response = llm_chat("llama3.2:3b", prompt)
+            response = _llm_chat("llama3.2:3b", prompt)
 
             answer = response['message']['content']
 
@@ -123,14 +126,14 @@ class Extractor:
                     "action": action,
                     "message": name
                 }
-                self.es.index(index=action_msg_index, body=msg)
+                self.es.index(index=action_queue_index, body=msg)
 
         return positives
 
 
     # TODO: how to feed text longer than context length
 
-    def filter_related(self, question):
+    def __filter_related(self, question):
         related_files = []
 
         # fetch all file nmaes from es
@@ -149,7 +152,7 @@ class Extractor:
             files.append(file['key'])
 
         prompt = f'return a python list to me\nQuestion: {question}\nFiles: {related_files}'
-        related_files = llm_chat("llama3.2:3b", prompt)
+        related_files = _llm_chat("llama3.2:3b", prompt)
 
         return related_files
 

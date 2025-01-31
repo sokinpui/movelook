@@ -29,6 +29,11 @@ from elasticsearch import Elasticsearch
 
 # load_dotenv()
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(dir_path, 'config.yml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
 class Collector:
     def __init__(self, config):
         self.marker = {}
@@ -53,7 +58,7 @@ class Collector:
 # get their path recursively
     def process(self):
         print(f"Processing logs in {self.directory}")
-        index = "logs_raw"
+        index = config['collector']['index']
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)

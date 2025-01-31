@@ -5,6 +5,8 @@ import docker
 from elasticsearch import Elasticsearch
 import subprocess
 import yaml
+import time
+import requests
 
 # if on mac, then use docker, if on linux cluster, if singularity is installed, use singularity, otherwise use docker
 
@@ -17,96 +19,97 @@ with open(config_path, 'r') as f:
 # Run the container
 home_dir = os.getenv('HOME')
 
-class ESEngine():
-    def __init__(self):
-        self.container = None
-        return_code = self.__start_container()
-        if return_code == 0:
-            self.instance = self.get_instance()
-        elif return_code == 1:
-            print('Failed to start container')
+mac_es_docker_setup = config['docker']['es']
+kibana_docker_setup = config['docker']['kibana']
 
+def _start_docker_on_mac(container_setup):
+    try:
+        # convert to string
+        colima_memory = str(config["colima"]["memory"])
+        res = subprocess.run(['colima', 'status'], capture_output=True, text=True)
+        if 'level=fatal' in res.stderr:
+            print('Starting colima...')
+            # config make the memory configurable
+            subprocess.run(['colima', 'start', '--memory', colima_memory])
+        else:
+            print('Colima is already running.')
+    except Exception as e:
+        print(e)
+        return 1
 
-    def __start_container(self):
-        if os.uname().sysname == 'Darwin':
-            print('Starting Docker on Mac')
-            return_code = self.__start_docker_on_mac()
-            if return_code == 1:
-                print('Failed to start docker on Mac')
-                return 1
-        elif os.uname().sysname == 'Linux':
-            if os.system('which singularity') == 0:
-                pass
-            else:
-                pass
-        elif os.uname().sysname == 'Windows':
-            # not supported
-            print('Windows is not supported')
+    os.environ['DOCKER_HOST'] = f'unix://{home_dir}/.colima/default/docker.sock'
+    client = docker.from_env()
 
-    def __start_docker_on_mac(self):
-        try:
-            res = subprocess.run(['colima', 'status'], capture_output=True, text=True)
-            if 'level=fatal' in res.stderr:
-                print('Starting colima...')
-                # config make the memory configurable
-                subprocess.run(['colima', 'start', '--memory', '4'])
-            else:
-                print('Colima is already running.')
-        except Exception as e:
-            print(e)
-            return 1
+    # check if the network exists
+    try:
+        network = client.networks.get(container_setup['network'])
+        print('Network exists')
+    except Exception as e:
+        print('Network does not exist')
+        network = client.networks.create(container_setup['network'])
+        print('Network created')
 
-        os.environ['DOCKER_HOST'] = f'unix://{home_dir}/.colima/default/docker.sock'
-        client = docker.from_env()
-
-        container_name   = config["docker"]["container_name"]
-        image   = config["docker"]["image"]
-        network_name   = config["docker"]["network_name"]
-        ports   = config["docker"]["ports"]
-        environment   = config["docker"]["environment"]
-
-        # check if the network exists
-        try:
-            network = client.networks.get(network_name)
-            print('Network exists')
-        except Exception as e:
-            print('Network does not exist')
-            network = client.networks.create(network_name)
-            print('Network created')
-
-        # remove the old container
-        try:
-            old_containers = client.containers.get("es01")
-            if old_containers.name == 'es01':
-                old_containers.remove(force=True)
-                print('Removed old container')
-        except Exception as e:
-            pass
-
-        # Run the container
-        try:
-            container = client.containers.run(
-               image,
-               name=container_name,
-               network=network_name,
-               ports=ports,
-               environment=environment,
-               detach=True,  # Run in detached mode
-               # remove=True  # Automatically remove the container when it exits
-               remove=False
-            )
-            print('Started container')
-        except Exception as e:
-            return 1
-            print(e)
-
-        return 0
-
-
-    def __start_singularity(self):
+    # remove the old container
+    try:
+        old_containers = client.containers.get(container_setup['name'])
+        if old_containers.name == container_setup['name']:
+            old_containers.remove(force=True)
+            print('Removed old container')
+    except Exception as e:
         pass
 
-    # data store outside of container
+    # Run the container
+    try:
+        container = client.containers.run(**container_setup)
+        print(f'Started container for {container_setup["name"]}')
+    except Exception as e:
+        print(e)
+        return 1
+
+    return 0
+
+# simple wait logic to check if ES is ready to use
+def _is_es_ready():
+    try:
+        requests.get('http://localhost:9200')
+        print('ES is up!')
+        return True
+    except requests.exceptions.ConnectionError:
+        print('Waiting for ES to start...')
+        time.sleep(1)
+        return False
+    except Exception as e:
+        print(f'An error occurred: {e}')
+        return False
+
+# start the container only
+def start_container():
+    if os.uname().sysname == 'Darwin':
+        print('Starting Docker on Mac')
+        return_code = _start_docker_on_mac(mac_es_docker_setup)
+        if return_code == 1:
+            print('Failed to start docker on Mac')
+            return 1
+        while not _is_es_ready():
+            pass
+        return 0
+    elif os.uname().sysname == 'Linux':
+        if os.system('which singularity') == 0:
+            pass
+        else:
+            pass
+    elif os.uname().sysname == 'Windows':
+        print('Windows is not supported')
+
+def start_kibana_gui():
+    while not _is_es_ready():
+        pass
+    return_code = _start_docker_on_mac(kibana_docker_setup)
+    if return_code == 1:
+        print('Failed to start docker on Mac')
+        return 1
+    print('kibana is now running')
+    return 0
 
 # TODO: work with ES security and authentication, cert and key files
 class ESClient:
@@ -116,6 +119,12 @@ class ESClient:
         self.instance = None
 
     def get_instance(self):
+        try:
+            requests.get('http://localhost:9200')
+        except requests.exceptions.ConnectionError as e:
+            print('Elasticsearch is not running')
+            print(e)
         self.instance = Elasticsearch('http://localhost:9200')
-
+        print('Connected to Elasticsearch')
+        print('Elasticsearch version, is running via Container')
         return self.instance

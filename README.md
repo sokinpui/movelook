@@ -10,7 +10,20 @@ text data analysis tools
 
 ## requirements
 - ollama(LLM deploy locally)
+- container runtime(docker/singularity)
 - elasticsearch(database)
+
+---
+
+run the following two command if you are on `Mac` or decide to use `docker` as container runtime
+```
+docker pull docker.elastic.co/elasticsearch/elasticsearch-wolfi:8.17.1
+```
+```
+docker pull docker.elastic.co/kibana/kibana:8.17.1
+```
+
+---
 
 ## LLM support
 Support different LLM model as long as ollama support it

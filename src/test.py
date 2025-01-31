@@ -1,7 +1,7 @@
 from log_collector import Collector
 from pattern_extractor import Extractor
-from es_engine import ESEngine
 from es_engine import ESClient
+from es_engine import start_container, start_kibana_gui
 
 import docker
 import os
@@ -24,12 +24,13 @@ def test_extractor():
     extractor.regex_search()
 
 def test_es_engine():
-    es = ESEngine()
+    es = start_container()
 
 # wait logic
-test_es_engine()
-
-# NOTE: wait logic use in main.py
+# test_es_engine()
+# start_kibana_gui()
+# test_collector()
+test_extractor()
 # while True:
 #     try:
 #         res = requests.get('http://localhost:9200')

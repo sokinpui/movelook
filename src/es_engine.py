@@ -12,7 +12,7 @@ import requests
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(dir_path, 'config.yml')
+config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 
@@ -89,10 +89,10 @@ def start_container():
         return_code = _start_docker_on_mac(mac_es_docker_setup)
         if return_code == 1:
             print('Failed to start docker on Mac')
-            return 1
+            return return_code
         while not _is_es_ready():
             pass
-        return 0
+        return return_code
     elif os.uname().sysname == 'Linux':
         if os.system('which singularity') == 0:
             pass
@@ -105,11 +105,13 @@ def start_kibana_gui():
     while not _is_es_ready():
         pass
     return_code = _start_docker_on_mac(kibana_docker_setup)
+    print('kibana is now running')
+    print('aceess kibana at http://localhost:5601')
     if return_code == 1:
         print('Failed to start docker on Mac')
         return 1
     print('kibana is now running')
-    return 0
+    return return_code
 
 # TODO: work with ES security and authentication, cert and key files
 class ESClient:

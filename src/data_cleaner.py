@@ -2,8 +2,11 @@ from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
 import yaml
 from es_engine import ESClient
+import os
 
-with open('config.yml', 'r') as f:
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(dir_path, 'devconfig.yml')
+with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
     retention_days = config['cleaner']['interval']
     buffer_index = config['cleaner']['index']

@@ -1,7 +1,7 @@
 from .timer import Timer
 
-from .log_collector import Collector
-from .pattern_extractor import Extractor
+from .collector import Collector
+from .analyzer import Analyzer
 from .action_handler import ActionHandler
 from .data_cleaner import BufferManager
 import os
@@ -24,7 +24,7 @@ ollama_llm.start_ollama()
 config = '$HOME/.config/ml/config.yml'
 
 collector = Collector(config)
-extractor = Extractor(config)
+extractor = Analyzer(config)
 action_handler = ActionHandler(config)
 move2buffer = BufferManager(config)
 trash_cleaner = BufferManager(config)

@@ -22,13 +22,13 @@ def _llm_chat(model, prompt):
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(dir_path, 'config.yml')
+config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 action_queue_index = config['action_hanlder']['index']
 search_index = config['collector']['index']
 
-class Extractor:
+class Analyzer:
     def __init__(self, config):
         self.es = ESClient().get_instance()
         self.read_config(config)
@@ -48,6 +48,7 @@ class Extractor:
             name = pattern_group['name']
             pattern = pattern_group['pattern']
             action = pattern_group['action']
+            print(pattern)
             query ={
               "query": {
                 "regexp": {
@@ -80,7 +81,7 @@ class Extractor:
                 helpers.bulk(self.es, actions)
                 print(f"Inserted {len(actions)} documents")
             else:
-                print("No documents to insert")
+                print(f"No documents to insert for {name}")
 
 
             # put message if pattern is found

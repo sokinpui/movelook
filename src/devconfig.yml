@@ -15,6 +15,7 @@ docker:
       xpack.license.self_generated.type: trial
     detach: true
     remove: false
+
   kibana:
     name: kib01
     image: "docker.elastic.co/kibana/kibana:8.17.1"

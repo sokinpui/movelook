@@ -1,5 +1,5 @@
-from log_collector import Collector
-from pattern_extractor import Extractor
+from collector import Collector
+from analyzer import Analyzer
 from es_engine import ESClient
 from es_engine import start_container, start_kibana_gui
 
@@ -20,7 +20,7 @@ def test_collector():
     collector.process()
 
 def test_extractor():
-    extractor = Extractor(config)
+    extractor = Analyzer(config)
     extractor.regex_search()
 
 def test_es_engine():

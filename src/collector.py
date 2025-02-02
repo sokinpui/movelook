@@ -30,7 +30,7 @@ from elasticsearch import Elasticsearch
 # load_dotenv()
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(dir_path, 'config.yml')
+config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 

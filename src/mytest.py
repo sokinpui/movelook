@@ -1,7 +1,7 @@
 from collector import Collector
 from analyzer import Analyzer
 from es_engine import ESClient
-from es_engine import start_container, start_kibana_gui
+from es_engine import start_container, start_kibana_gui, remove_container
 
 import docker
 import os
@@ -14,6 +14,8 @@ import requests
 home_dir = os.getenv('HOME')
 config = f'{home_dir}/work/ml/config.yml'
 
+with open("devconfig.yml", 'r') as f:
+    devconfig = yaml.safe_load(f)
 
 def test_collector():
     collector = Collector(config)
@@ -26,11 +28,21 @@ def test_extractor():
 def test_es_engine():
     es = start_container()
 
+def rm_containers():
+    names = []
+    names.append(devconfig['docker']['es']['name'])
+    names.append(devconfig['docker']['kibana']['name'])
+    for name in names:
+        print(f'Removing container {name}')
+        remove_container(name)
+
 # wait logic
-test_es_engine()
-start_kibana_gui()
-# test_collector()
-# test_extractor()
+
+def test():
+    # test_es_engine()
+    # start_kibana_gui()
+    # test_collector()
+    test_extractor()
 
 # while True:
 #     try:

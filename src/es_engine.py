@@ -129,6 +129,15 @@ def start_kibana_gui():
     print('kibana is now running')
     return return_code
 
+def remove_container(name):
+    try:
+        client = docker.from_env()
+        container = client.containers.get(name)
+        container.remove(force=True)
+    except Exception as e:
+        print(f'An error occurred: {e}')
+        pass
+
 # TODO: work with ES security and authentication, cert and key files
 class ESClient:
 

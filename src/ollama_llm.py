@@ -19,9 +19,12 @@ def test_llm(model, prompt, options):
 with open("../log/OpenSSH_2k.log", "r") as f:
     text = ""
     # import top 10% only
+    count = 0
     for line in f:
         text += line
-        if len(text) > 1000:
+        count += 1
+        print(line)
+        if count > 10:
             break
 
 question = "I will prove you some logs sample, can you generate a regex pattern for me to detect potential error"

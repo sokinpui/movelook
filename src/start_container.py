@@ -26,9 +26,23 @@ def test_extractor():
 def test_es_engine():
     es = start_container()
 
+def test_regex_search():
+    es = ESClient().get_instance()
+    pattern = r"\b Dec \d{1,2}:\d{2}:\d{2} \S+ sshd\[([0-9]+)\]: (reverse|input_userauth_request|pam_unix\(sshd:auth\)) \(.*?\) failed - POSSIBLE BREAK-IN ATTEMPT!"
+    query ={
+      "query": {
+        "regexp": {
+          "line": f"{pattern}"
+        }
+      }
+    }
+    res = es.search(index='test-index', body=query)
+    print(res)
+
+
 # wait logic
 test_es_engine()
-start_kibana_gui()
+# start_kibana_gui()
 # test_collector()
 # test_extractor()
 

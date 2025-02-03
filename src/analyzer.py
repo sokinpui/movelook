@@ -48,15 +48,16 @@ class Analyzer:
             name = pattern_group['name']
             pattern = pattern_group['pattern']
             action = pattern_group['action']
-            print(pattern)
             query ={
               "query": {
                 "regexp": {
-                  "line": pattern
+                    "line": {
+                        "value": pattern,
+                        "flags": "ALL"
+                    }
                 }
               }
             }
-            # :TODO: make "logs_raw" a Global variable
             print(f"Searching for {name} pattern")
             response = self.es.search(index=search_index, body=query)
 
@@ -75,7 +76,6 @@ class Analyzer:
                     "_source": hit['_source']
                 }
                 # print matched logs_raw
-                print(hit['_source']['line'])
                 actions.append(action)
             if actions:
                 helpers.bulk(self.es, actions)
@@ -156,5 +156,4 @@ class Analyzer:
         related_files = _llm_chat("llama3.2:3b", prompt)
 
         return related_files
-
 

@@ -40,6 +40,21 @@ def _start_docker_on_mac(container_setup):
     os.environ['DOCKER_HOST'] = f'unix://{home_dir}/.colima/default/docker.sock'
     client = docker.from_env()
 
+    # volume is the key name in the config files, how to get the value?
+    volume_name = list(config['docker']['es']['volumes'].keys())[0]
+    print(f'Volume name: {volume_name}')
+    try:
+        # Check if the volume already exists
+        volume = client.volumes.get(volume_name)
+        print(f"Volume '{volume_name}' already exists. Using it.")
+    except docker.errors.NotFound:
+        # If the volume does not exist, create it
+        volume = client.volumes.create(name=volume_name)
+        print(f"Volume '{volume_name}' created.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
     # check if the network exists
     try:
         network = client.networks.get(container_setup['network'])
@@ -62,6 +77,7 @@ def _start_docker_on_mac(container_setup):
     try:
         container = client.containers.run(**container_setup)
         print(f'Started container for {container_setup["name"]}')
+        print(f'Container ID: {container.id}')
     except Exception as e:
         print(e)
         return 1

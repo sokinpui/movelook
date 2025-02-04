@@ -1,15 +1,36 @@
-a log watching system
-this system is separated bythree section
+# MoveLook system
+text data analysis tools
+## work flow of the system
+1. collect data into database
+2. analyze collected data base on user defined rules
+  - 2.1 Analysis agent:
+    - regex search given by user
+    - LLM search, answer user's prompt
+3. Further actinos base on the analysis results
 
-# section 1: log collection
-collect log from directory
-
-# section2: pattern insight from raw log
-extract pattern from raw log
-
-# section3: action respone to extracted pattern
-response to extracted pattern
+## requirements
+- ollama(LLM deploy locally)
+- container runtime(docker/singularity)
+- elasticsearch(database)
 
 ---
 
-! [Flow of the proram](./attachment/arch.png)
+run the following two command if you are on `Mac` or decide to use `docker` as container runtime
+```
+docker pull docker.elastic.co/elasticsearch/elasticsearch-wolfi:8.17.1
+```
+```
+docker pull docker.elastic.co/kibana/kibana:8.17.1
+```
+
+---
+
+## LLM support
+Support different LLM model as long as ollama support it
+
+# WIP
+- [ ] support differnt database
+- [ ] extends data types support
+- [ ] support plugin system for new analysis agent attached
+- [ ] accuracy test for LLM analysis agent
+- [ ] support for supar large size data(longer than LLM's context length)

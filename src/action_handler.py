@@ -1,16 +1,21 @@
 import logging
-from es_client import ESClient
+from es_engine import ESClient
 import yaml
+from elasticsearch import Elasticsearch
+import os
 
 # Load configuration from a file
-def load_config(config_path):
-    with open(config_path, 'r') as file:
-        return yaml.safe_load(file)
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(dir_path, 'devconfig.yml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
 
 class ActionHandler:
     def __init__(self, config):
         self.config = config
-        self.es_client = ESClient.get_instance()
+        self.es = ESClient().get_instance()
         self.get_config(config)
 
     def get_config(self, config_path):
@@ -27,7 +32,7 @@ class ActionHandler:
             }
         }
 
-        response = self.es_client.search(index=index, body=query)
+        response = self.es.search(index=index, body=query)
         # get the field "messages" from the response
         messages = [hit['_source']['message'] for hit in response['hits']['hits']]
 
@@ -44,7 +49,7 @@ class ActionHandler:
     # example action handlers
     def log_warning(self, message):
         logging.warning(f"Warning logged: {message}")
-        self.es_client.index(index='warnings', body={"message": message})
+        self.es.index(index='warnings', body={"message": message})
 
     # example action handlers
     def send_alert(self, message):

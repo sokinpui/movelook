@@ -1,7 +1,7 @@
 from .timer import Timer
 
-from .log_collector import Collector
-from .pattern_extractor import Extractor
+from .collector import Collector
+from .analyzer import Analyzer
 from .action_handler import ActionHandler
 from .data_cleaner import BufferManager
 import os
@@ -9,18 +9,22 @@ import sys
 
 import config_checker
 import start_elasticsearch
+import ollama_llm
+
 import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='ml.log', format='%(levelname)s: %(asctime) %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 
-config_checker.config_checker()
-start_elasticsearch.start_elasticsearch()
+# TODO: doesn't put any config file yet for convenience
+# config_checker.config_checker()
+# start_elasticsearch.start_elasticsearch()
+ollama_llm.start_ollama()
 
 # $HOME/.config/ml/config.yml
 config = '$HOME/.config/ml/config.yml'
 
 collector = Collector(config)
-extractor = Extractor(config)
+extractor = Analyzer(config)
 action_handler = ActionHandler(config)
 move2buffer = BufferManager(config)
 trash_cleaner = BufferManager(config)

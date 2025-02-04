@@ -1,9 +1,12 @@
 from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
 import yaml
-from .es_client import ESClient
+from es_engine import ESClient
+import os
 
-with open('config.yml', 'r') as f:
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(dir_path, 'devconfig.yml')
+with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
     retention_days = config['cleaner']['interval']
     buffer_index = config['cleaner']['index']
@@ -11,7 +14,7 @@ with open('config.yml', 'r') as f:
 
 class BufferManager:
     def __init__(self, config):
-        self.es_client = ESClient.get_instance()
+        self.es = ESClient().get_instance()
         self.retention_period = timedelta(days=retention_days)
         self.buffer_index = buffer_index
         self.get_config(config)
@@ -24,7 +27,7 @@ class BufferManager:
     def move_data(self, source, dest):
         cutoff_date = datetime.now() - self.retention_period
 
-        reindex_response = self.es_client.reindex({
+        reindex_response = self.es.reindex({
             "source": {
                 "index": source,
                 "query": {
@@ -45,7 +48,7 @@ class BufferManager:
             print(f"Moved {reindex_response['total']} entries to buffer.")
 
             # Delete old entries from the source index
-            delete_response = self.es_client.delete_by_query(index=source, body={
+            delete_response = self.es.delete_by_query(index=source, body={
                 "query": {
                     "range": {
                         "timestamp": {
@@ -67,7 +70,7 @@ class BufferManager:
     def cleanup_buffer(self):
         self.move_data(buffer_index, "trash")
         # Cleanup the trash index
-        cleanup_response = self.es_client.indices.delete(index="trash")
+        cleanup_response = self.es.indices.delete(index="trash")
 
 # Example usage
 if __name__ == "__main__":

@@ -1,57 +1,95 @@
 from ollama import chat, ChatResponse, generate
-import ollama
 import yaml
 import os
 import time
-import resource
 from datetime import datetime
+from memory_profiler import profile
+import matplotlib.pyplot as plt
+import time
+import json
+import random
 
-print("Start time: ", datetime.now())
+
 
 # Start time tracking
-start_time = time.time()
-
-def test_llm(model, prompt, options):
-    response : ChatResponse = generate(model=model, prompt=prompt, options=options, stream=False)
-    print(response['response'])
-
 # import file in parent directory
-with open("../log/OpenSSH_2k.log", "r") as f:
+
+def llm_chat(model, prompt, options, format):
+    # response : ChatResponse = generate(model=model, prompt=prompt, options=options, stream=False)
+    response : ChatResponse = chat(model=model,
+                                   messages= [{ "role": "user", "content": prompt }],
+                                   options=options,
+                                   format=format,
+                                   stream=False)
+    print(response['message']['content'])
+
+def llm_generate(model, prompt, options, format) -> ChatResponse:
+    response : ChatResponse = generate(model=model, format=format, prompt=prompt, options=options, stream=False)
+    print(response)
+    return response
+
+# prompt give to the model
+
+def main():
+    with open("../log/OpenSSH_2k.log", "r") as f:
+        lines = f.readlines()
+
+# read 50 random lines from the file
     text = ""
-    # import top 10% only
-    count = 0
-    for line in f:
-        text += line
-        count += 1
-        print(line)
-        if count > 10:
-            break
+    # num_lines = min(100, len(lines))
+    # random_lines = random.sample(lines, num_lines)
+    random_lines = lines[:100]
+    for line in random_lines:
+        text += repr(line)
 
-question = "I will prove you some logs sample, can you generate a regex pattern for me to detect potential error"
-prompt = f'**question:**\n{question}\n**text source:**{text}\n'
+    incidents = "Login Attempts with Disabled Accounts"
+    # question = f"You are a regex pattern generator. Learn from the following sample data and generate a regex pattern that can identify the incidents from the original log:{incidents}. Responsd using JSON"
 
-model = "llama3.2:3b"
-# options = {
-#     "temperature": 0.1,
-#     "top_p": 0.8,
-#     "top_k": 20,
-# }
-options = {}
-test_llm(model, prompt, options)
+    question = "is there any invalid user try to login? return all lines related."
 
-print()
-end_time = time.time()
+    prompt = f'{text}\n\n{question}'
 
-# Calculate time taken
-execution_time = end_time - start_time
+# model and model options/parrameters
+    model = "llama3.2:3b-text-q8_0"
+    # options = {
+    #     "temperature": 0,
+    # }
+    options = None
 
-# Get memory usage
-memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss  # in kilobytes
-memory_usage_mb = memory_usage / 1024  # Convert to megabytes
-memory_usage_gb = memory_usage_mb / 1024  # Convert to megabytes
+# format of the response
+    # format = {
+    #         "type": "object",
+    #         "properties": {
+    #             "regex_pattern": {
+    #                 "type": "string",
+    #                 }
+    #             },
+    #         "required": ["regex_pattern"]
+    #         }
+    format = None
 
-# Print results
-print('Execution Time =', execution_time, 'seconds')
-print('Peak Memory Usage =', memory_usage_gb, 'GB')
-print("=========================================")
-print()
+    text = ""
+
+    print("Start time: ", datetime.now())
+    print()
+
+    print("===================response====================")
+    start_time = time.time()
+
+    res = llm_generate(model, prompt, options, format)
+
+    # json_string = res['response']
+    # json_dict = json.loads(json_string)
+    # print(json_dict['regex_pattern'])
+    #
+    # regex_pattern = json_dict['regex_pattern']
+    #
+    end_time = time.time()
+    print(f"Execution time: {end_time - start_time:.4f} seconds")
+
+    # return regex_pattern
+
+
+if __name__ == "__main__":
+    main()
+    pass

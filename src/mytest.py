@@ -2,6 +2,7 @@ from collector import Collector
 from analyzer import Analyzer
 from es_engine import ESClient
 from es_engine import start_container, start_kibana_gui, remove_container
+from ollama_llm import main
 
 import docker
 import os
@@ -23,7 +24,7 @@ def test_collector():
 
 def test_extractor():
     extractor = Analyzer(config)
-    extractor.regex_search()
+    extractor.regex_batch_search()
 
 def test_es_engine():
     es = start_container()
@@ -42,7 +43,20 @@ def test():
     # test_es_engine()
     # start_kibana_gui()
     # test_collector()
+
+    # regex pattern return by llm
+    # string = main()
+    # regex_obj = {
+    #     "name": "test",
+    #     "pattern": string,
+    #     "action": "test"
+    # }
+
+    # extractor = Analyzer(config)
+    # extractor.regex_search(regex_obj)
     test_extractor()
+
+test()
 
 # while True:
 #     try:

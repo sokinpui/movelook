@@ -13,16 +13,44 @@ llm_model: "llama3.2:3b"
 # search pattern error/msg raise in log, may be more than one
 patterns:
   regex:
+    # use single quote to escape special characters
+
     - name: "Error Patterns"
       pattern: "1.*1"
       action: "log_warning"
     - name: "Warning Patterns"
       pattern: ".*state.*"
       action: "log_warning"
+
+    - name: "ssh"
+      pattern: ".*? Invalid user (.*) from .*?"
+      action: "log_warning"
+
+    - name: "fail auth"
+      pattern: "authentication failure; logname= uid=(0|\\w+)? euid=(0|[^\\s]+)? tty=ssh ruser= rhost=.+"
+      action: "log_warning"
+
+    - name: "connection closed"
+      pattern: "Connection closed by \\S+ \\[preauth\\]"
+      action: "log_warning"
+
+    - name: "wrong auth"
+      pattern: 'Dec \d{1,2} \d{1,2}:\d{2}:\d{2} \S+ sshd\[([0-9]+)\]:.*'
+      action: "log_warning"
+
+    - name: "invalid login in ssh"
+      pattern: '.*Invalid user\\s+[^ ]+ from\\s+[0-9.]+'
+      action: "log_warning"
+
+    # - name: "invalid login in ssh"
+    #   pattern: '(Failed password for root from (\d{1,3}\.){3}\d{1,3} port \d+ ssh2)|(input_userauth_request: invalid user admin  [preauth])'
+    #   action: "log_warning"
+
   llm:
     - name: "storae space richness check"
       prompt: "does the disk going to full (>90%)?"
       action: "send_alert"
+
 
 
 actions:
@@ -30,3 +58,4 @@ actions:
     descr: "Log a warning message"
   send_alert:
     descr: "Send an alert to the monitoring system"
+

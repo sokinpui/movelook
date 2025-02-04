@@ -34,7 +34,8 @@ format = {
     ]
 }
 
-model = "llama3.1:8b-instruct-fp16"
+model = "llama3.1:8b-instruct-q4_K_M"
+# model = "llama3.1:8b-instruct-fp16"
 # model = "llama3.2:3b"
 # ======================================
 

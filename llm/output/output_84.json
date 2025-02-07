@@ -1,0 +1,8 @@
+{
+    "sample_size": 500,
+    "HealthApp_2k.log": {
+        "total_tokens": 31218,
+        "duration": "3.907460213s",
+        "response": "{\n  \"explanation\": \"No unusual patterns were detected in the provided log entries.\",\n  \"lines\": []\n}"
+    }
+}

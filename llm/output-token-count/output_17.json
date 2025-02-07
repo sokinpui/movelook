@@ -1,0 +1,67 @@
+{
+    "sample_size": 300,
+    "HealthApp_2k.log": {
+        "total_tokens": 18848,
+        "duration": "1.182356119s"
+    },
+    "Hadoop_2k.log": {
+        "total_tokens": 27431,
+        "duration": "1.322894096s"
+    },
+    "BGL_2k.log": {
+        "total_tokens": 33119,
+        "duration": "1.29645896s"
+    },
+    "Thunderbird_2k.log": {
+        "total_tokens": 26899,
+        "duration": "1.300592899s"
+    },
+    "Zookeeper_2k.log": {
+        "total_tokens": 23180,
+        "duration": "1.172047853s"
+    },
+    "Windows_2k.log": {
+        "total_tokens": 18685,
+        "duration": "1.087187052s"
+    },
+    "HPC_2k.log": {
+        "total_tokens": 10913,
+        "duration": "1.171245098s"
+    },
+    "OpenSSH_2k.log": {
+        "total_tokens": 17343,
+        "duration": "1.178133965s"
+    },
+    "HDFS_2k.log": {
+        "total_tokens": 25363,
+        "duration": "1.285838127s"
+    },
+    "Apache_2k.log": {
+        "total_tokens": 12727,
+        "duration": "1.242249966s"
+    },
+    "Mac_2k.log": {
+        "total_tokens": 23376,
+        "duration": "1.340802193s"
+    },
+    "Spark_2k.log": {
+        "total_tokens": 14298,
+        "duration": "1.139494181s"
+    },
+    "Android_2k.log": {
+        "total_tokens": 20438,
+        "duration": "1.613991261s"
+    },
+    "Proxifier_2k.log": {
+        "total_tokens": 18487,
+        "duration": "1.116124153s"
+    },
+    "Linux_2k.log": {
+        "total_tokens": 18253,
+        "duration": "1.104466915s"
+    },
+    "OpenStack_2k.log": {
+        "total_tokens": 60405,
+        "duration": "1.393097162s"
+    }
+}

@@ -73,7 +73,7 @@ class Collector:
                     lines = f.readlines()
 
                     if marker == len(lines):
-                      print("No update")
+                      print(f"file {log_path} has not been updated")
                       return
 
                     # reset marker if last marker is greater than No. of lines
@@ -91,6 +91,7 @@ class Collector:
                               'timestamp': datetime.datetime.now(),
                             }
                         self.es.index(index=index, body=doc)
+                    print(f"Inserted {len(lines) - marker} lines of {log_path}")
 
                     # update marker to last line
                     self.__set_marker(log_path, len(lines))
@@ -100,11 +101,9 @@ class Collector:
 
     def __set_marker(self, log_path, marker):
         self.marker[log_path] = marker
-        print(f"Set marker to {marker}")
 
     def __reset_marker(self, log_path):
         self.marker[log_path] = 0
-        print(f"Reset marker to 0")
         return self.marker[log_path]
 
 # test config reading, pring the config

@@ -1,7 +1,6 @@
 import datetime
 
 from pydantic import Json, NonNegativeFloat
-from ptimer import Timer
 import yaml
 import os
 from elasticsearch import helpers
@@ -9,16 +8,16 @@ from es_engine import ESClient
 
 valid_timestamp_range = 7
 
-from ollama import chat, ChatResponse
+# from ollama import chat, ChatResponse
 
 # llm chat helper function
-def _llm_chat(model, prompt):
-    response : ChatResponse = chat(model=model, messages=[{
-            'role': 'user',
-            'content': prompt
-        }
-    ])
-    return response
+# def _llm_chat(model, prompt):
+#     response : ChatResponse = chat(model=model, messages=[{
+#             'role': 'user',
+#             'content': prompt
+#         }
+#     ])
+#     return response
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -102,64 +101,64 @@ class Analyzer:
 
         return regex_match_indices
 
-    def llm_search(self):
-        llm_searches = self.config['patterns']['llm']
-        # positive means llm agent answer yes to the question
-        positives = []
-
-        for prompt_obj in llm_searches:
-            name = prompt_obj['name']
-            content = prompt_obj['prompt']
-            action = prompt_obj['action']
-
-            # concatenate all the file into one string within 128k characters
-            # files = concatenate_files_in_es()
-            related_text = None
-
-            # or use another llm agent to decide should a alert msg to be inserted
-            prompt = f'answer either "yes" or "no"\ncontext/files/text:{related_text} \nquestion: {content}\n'
-            response = _llm_chat("llama3.2:3b", prompt)
-
-            answer = response['message']['content']
-
-            if 'yes' in answer or "Yes" in answer:
-                # mark the name since it is positives
-                # consist the name to lower case to es regex search implementation
-                # TODO: insert the prompt to elasticsearch?
-                positives.append(name.lower())
-                # store the message
-                msg = {
-                    "timestamp": datetime.datetime.now(),
-                    "action": action,
-                    "message": name
-                }
-                self.es.index(index=action_queue_index, body=msg)
-
-        return positives
+    # def llm_search(self):
+    #     llm_searches = self.config['patterns']['llm']
+    #     # positive means llm agent answer yes to the question
+    #     positives = []
+    #
+    #     for prompt_obj in llm_searches:
+    #         name = prompt_obj['name']
+    #         content = prompt_obj['prompt']
+    #         action = prompt_obj['action']
+    #
+    #         # concatenate all the file into one string within 128k characters
+    #         # files = concatenate_files_in_es()
+    #         related_text = None
+    #
+    #         # or use another llm agent to decide should a alert msg to be inserted
+    #         prompt = f'answer either "yes" or "no"\ncontext/files/text:{related_text} \nquestion: {content}\n'
+    #         response = _llm_chat("llama3.2:3b", prompt)
+    #
+    #         answer = response['message']['content']
+    #
+    #         if 'yes' in answer or "Yes" in answer:
+    #             # mark the name since it is positives
+    #             # consist the name to lower case to es regex search implementation
+    #             # TODO: insert the prompt to elasticsearch?
+    #             positives.append(name.lower())
+    #             # store the message
+    #             msg = {
+    #                 "timestamp": datetime.datetime.now(),
+    #                 "action": action,
+    #                 "message": name
+    #             }
+    #             self.es.index(index=action_queue_index, body=msg)
+    #
+    #     return positives
 
 
     # TODO: how to feed text longer than context length
 
-    def __filter_related(self, question):
-        related_files = []
-
-        # fetch all file nmaes from es
-        query = {
-                "aggs": {
-                    "unique_files": {
-                        "terms": {
-                            "field": "path"
-                        }
-                    }
-                }
-            }
-        response = self.es.search(index="logs_raw", body=query)
-        files = []
-        for file in response['aggregations']['unique_files']['buckets']:
-            files.append(file['key'])
-
-        prompt = f'return a python list to me\nQuestion: {question}\nFiles: {related_files}'
-        related_files = _llm_chat("llama3.2:3b", prompt)
-
-        return related_files
+    # def __filter_related(self, question):
+    #     related_files = []
+    #
+    #     # fetch all file nmaes from es
+    #     query = {
+    #             "aggs": {
+    #                 "unique_files": {
+    #                     "terms": {
+    #                         "field": "path"
+    #                     }
+    #                 }
+    #             }
+    #         }
+    #     response = self.es.search(index="logs_raw", body=query)
+    #     files = []
+    #     for file in response['aggregations']['unique_files']['buckets']:
+    #         files.append(file['key'])
+    #
+    #     prompt = f'return a python list to me\nQuestion: {question}\nFiles: {related_files}'
+    #     related_files = _llm_chat("llama3.2:3b", prompt)
+    #
+    #     return related_files
 

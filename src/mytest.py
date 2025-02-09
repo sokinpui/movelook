@@ -4,12 +4,8 @@ from es_engine import ESClient
 from es_engine import start_container, start_kibana_gui, remove_container
 from ollama_llm import main
 
-import docker
 import os
-import subprocess
 import yaml
-import time
-import requests
 
 
 home_dir = os.getenv('HOME')
@@ -40,8 +36,8 @@ def rm_containers():
 # wait logic
 
 def test():
-    # test_es_engine()
-    # start_kibana_gui()
+    test_es_engine()
+    start_kibana_gui()
     # test_collector()
 
     # regex pattern return by llm
@@ -56,7 +52,8 @@ def test():
     # extractor.regex_search(regex_obj)
     test_extractor()
 
-test()
+if __name__ == '__main__':
+    test()
 
 # while True:
 #     try:

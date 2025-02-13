@@ -41,7 +41,7 @@ colima:
   memory: 4
 
 collector:
-  index: raw_log_file
+  index: text_data_logs
 
 extractor:
   - interval: 10

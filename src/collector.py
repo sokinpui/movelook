@@ -32,7 +32,7 @@ from elasticsearch import Elasticsearch
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
-    config = yaml.safe_load(f)
+    devconfig = yaml.safe_load(f)
 
 class Collector:
     def __init__(self, config):
@@ -41,9 +41,9 @@ class Collector:
         # self.timer.set_function(self.process)
         # self.marker_db_index = 'marker'
         self.es = ESClient().get_instance()
-        client_info = self.es.info()
-        print('Connected to Elasticsearch!')
-        pprint(client_info)
+        # client_info = self.es.info()
+        # print('Connected to Elasticsearch!')
+        # pprint(client_info)
         self.read_config(config)
 
 
@@ -56,9 +56,9 @@ class Collector:
 # read all the log file in self.directory recursively
 # the log files may appear in different subdirectories
 # get their path recursively
-    def process(self):
+    def start_collect(self):
         print(f"Processing logs in {self.directory}")
-        index = config['collector']['index']
+        index = devconfig['collector']['index']
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)
@@ -79,7 +79,6 @@ class Collector:
                     # reset marker if last marker is greater than No. of lines
                     if marker > len(lines):
                         marker = self.__reset_marker(log_path)
-
 
                     for i in range(marker, len(lines)):
                         # insert to database
@@ -108,4 +107,5 @@ class Collector:
 
 # test config reading, pring the config
 if __name__ == '__main__':
-  pass
+    config_path = '../config.yml'
+    Collector(config_path).start_collect()

@@ -151,7 +151,7 @@ class ESClient:
         except requests.exceptions.ConnectionError as e:
             print('Elasticsearch is not running')
             print(e)
-        self.instance = Elasticsearch('http://localhost:9200')
+        self.instance = Elasticsearch([ 'http://localhost:9200' ])
         print('Connected to Elasticsearch')
         print('Elasticsearch version, is running via Container')
         return self.instance

@@ -16,7 +16,7 @@ with open("devconfig.yml", 'r') as f:
 
 def test_collector():
     collector = Collector(config)
-    collector.process()
+    collector.start_collect()
 
 def test_extractor():
     extractor = Analyzer(config)

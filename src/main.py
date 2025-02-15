@@ -30,6 +30,7 @@ class Service:
         self.__parsed_args = self.handle_args()
 
     def cmd_start(self):
+        es_engine.start_container()
         while True:
             if self.__parsed_args.no_collect == False:
                 self.start_collector(self.__parsed_args.config)

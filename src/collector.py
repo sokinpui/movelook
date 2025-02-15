@@ -1,7 +1,6 @@
 import yaml
 import datetime
 import os
-from ptimer import Timer
 from es_engine import ESClient
 
 # read every lines in a log then insert to a database, the whole log file will insert into single field
@@ -62,7 +61,7 @@ class Collector:
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)
-                print(log_path)
+
                 # self.process_log(log_path)
                 marker = self.__get_marker(log_path)
                 #print the log name and the system come from

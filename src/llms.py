@@ -5,6 +5,7 @@ from datetime import datetime
 from es_engine import ESClient
 from analyzer import Analyzer
 import llm_gemini
+import json
 
 from pydantic import BaseModel, TypeAdapter
 # import google.generativeai as genai
@@ -15,11 +16,13 @@ config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
     devconfig = yaml.safe_load(f)
 
-prompt = f"""
+snapshot_check_prompt = f"""
 Given the follow log, please check if there contains any potential issues.
 
-You should give a explanation of the potential issues and the line number of the log.
+You should give a explanation of the potential issues and the line numbers related to this issue.
 don't give any line number within the explanation.
+only return line number if you think this line is related to the potential issues.
+if you think there is no potential issues, don't return any line number.
 
 log structure: lineNumber: logLine
 
@@ -82,6 +85,24 @@ def get_file_snapshot(snapshot_size: int, earliest_timestamp: datetime, file_nam
 
     return snapshot
 
+def get_list_of_files() -> list:
+    es = ESClient().get_instance()
+    query = {
+        "size": 0,
+        "aggs": {
+            "files": {
+                "terms": {
+                    "field": "path.keyword",
+                    "size": 1000
+                }
+            }
+        }
+    }
+
+    response = es.search(index=devconfig['collector']['index'], body=query)
+    files = [bucket['key'] for bucket in response['aggregations']['files']['buckets']]
+    return files
+
 class LLM_analyzer(Analyzer):
     def __init__(self, config):
         super().__init__(config)
@@ -94,7 +115,7 @@ class LLM_analyzer(Analyzer):
         if model == "gemini":
             return llm_gemini.generate_response(prompt)
 
-if __name__ == "__main__":
+def test(prompt):
     config = "../config.yml"
     llm = LLM_analyzer(config)
     files = "OpenSSH_2K.log"
@@ -112,10 +133,49 @@ if __name__ == "__main__":
     # use gemini model to generate response
     total_tokens = llm.count_tokens("gemini", prompt)
     print(f"Total tokens: {total_tokens}")
-    response = llm_gemini.generate_response(prompt, config={})
+    response = llm_gemini.generate_response(prompt)
     print(response)
 
     # insert reponse to files
     with open("response.txt", "w") as f:
         f.write(response)
     # Load the configuration
+
+if __name__ == "__main__":
+    # test(snapshot_check_prompt)
+
+    # prompt = f"""
+    # please provide me a list of potential issues that generally lookup by log analysis for cluter system log
+    # """
+    # response = llm_gemini.generate_response(prompt, config={})
+    # print(response)
+
+    list_of_files = get_list_of_files()
+    print(list_of_files)
+
+    # get the json files
+    with open("./lookup_questions.json", "r") as f:
+        lookup_aspects = f.readlines()
+
+    class Recipe1(BaseModel):
+        files: list[str]
+
+    gemini_response_config = {
+        'response_mime_type': 'application/json',
+        'response_schema': Recipe1,
+    }
+
+    for aspect in lookup_aspects:
+        prompt = f"""
+        if I want to analysis {aspect},
+
+        for the following files:
+        {list_of_files}
+
+        please provide me a list of files that highly related to {aspect}
+        """
+        response = llm_gemini.generate_response(prompt, config=gemini_response_config)
+        print(f"Aspect: {aspect}")
+        print(response)
+
+

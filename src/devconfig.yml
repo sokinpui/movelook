@@ -56,4 +56,4 @@ cleaner:
 
 analyzer:
   llm:
-    snapshot_size: 15
+    snapshot_size: 1000

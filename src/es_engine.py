@@ -14,18 +14,18 @@ import requests
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config_path = os.path.join(dir_path, 'devconfig.yml')
 with open(config_path, 'r') as f:
-    config = yaml.safe_load(f)
+    dev_config = yaml.safe_load(f)
 
 # Run the container
 home_dir = os.getenv('HOME')
 
-mac_es_docker_setup = config['docker']['es']
-kibana_docker_setup = config['docker']['kibana']
+mac_es_docker_setup = dev_config['docker']['es']
+kibana_docker_setup = dev_config['docker']['kibana']
 
 def _start_docker_on_mac(container_setup):
     try:
         # convert to string
-        colima_memory = str(config["colima"]["memory"])
+        colima_memory = str(dev_config["colima"]["memory"])
         res = subprocess.run(['colima', 'status'], capture_output=True, text=True)
         if 'level=fatal' in res.stderr:
             print('Starting colima...')
@@ -41,7 +41,7 @@ def _start_docker_on_mac(container_setup):
     client = docker.from_env()
 
     # volume is the key name in the config files, how to get the value?
-    volume_name = list(config['docker']['es']['volumes'].keys())[0]
+    volume_name = list(dev_config['docker']['es']['volumes'].keys())[0]
     print(f'Volume name: {volume_name}')
     try:
         # Check if the volume already exists

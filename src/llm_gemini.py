@@ -13,10 +13,11 @@ class Recipe(BaseModel):
     linesNumber: list[int]
 
 api_key = os.environ['GENAI_API_KEY']
+model="gemini-1.5-flash-8b"
 
-def count_tokens(prompt):
+def count_tokens(prompt, model=model):
     contents = prompt
-    model="gemini-1.5-flash-8b"
+    model=model
     client = genai.Client(api_key=api_key)
     response = client.models.count_tokens(
         model=model,
@@ -29,9 +30,9 @@ gemini_response_config = {
     'response_schema': Recipe,
 }
 
-def generate_response(prompt, config=gemini_response_config):
+def generate_response(prompt, model=model, config=gemini_response_config):
     contents = prompt
-    model="gemini-1.5-flash-8b"
+    model=model
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model=model,

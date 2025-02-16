@@ -9,3 +9,4 @@ RequirementGuideline.pdf
 moveLook.md
 src/MoveLook.egg-info/
 pyproject.toml
+src/output/

@@ -8,8 +8,6 @@ database:
 collector:
   directory: /Users/mac/work/ml/log
 
-llm_model: "llama3.2:3b"
-
 # search pattern error/msg raise in log, may be more than one
 patterns:
   regex:
@@ -58,3 +56,7 @@ actions:
   send_alert:
     descr: "Send an alert to the monitoring system"
 
+
+llm:
+  model: "gemini-1.5-flash-8b"
+  # model: "gemini-1.5-pro"

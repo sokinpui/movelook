@@ -7,6 +7,8 @@ import subprocess
 import yaml
 import time
 import requests
+from datetime import datetime
+import random
 
 # if on mac, then use docker, if on linux cluster, if singularity is installed, use singularity, otherwise use docker
 
@@ -23,6 +25,9 @@ mac_es_docker_setup = dev_config['docker']['es']
 kibana_docker_setup = dev_config['docker']['kibana']
 
 def _start_docker_on_mac(container_setup):
+    """
+    start docker and run Elasticsearch container
+    """
     try:
         # convert to string
         colima_memory = str(dev_config["colima"]["memory"])
@@ -98,7 +103,6 @@ def _is_es_ready():
         print(f'An error occurred: {e}')
         return False
 
-# start the container only
 def start_container():
     if os.uname().sysname == 'Darwin':
         print('Starting Docker on Mac')
@@ -118,6 +122,9 @@ def start_container():
         print('Windows is not supported')
 
 def start_kibana_gui():
+    """
+    start kibana gui for Elasticsearch
+    """
     while not _is_es_ready():
         pass
     return_code = _start_docker_on_mac(kibana_docker_setup)
@@ -138,6 +145,8 @@ def remove_container(name):
         print(f'An error occurred: {e}')
         pass
 
+
+
 # TODO: work with ES security and authentication, cert and key files
 class ESClient:
 
@@ -152,6 +161,122 @@ class ESClient:
             print('Elasticsearch is not running')
             print(e)
         self.instance = Elasticsearch([ 'http://localhost:9200' ])
-        print('Connected to Elasticsearch')
-        print('Elasticsearch version, is running via Container')
         return self.instance
+
+    def get_files_size(self, file_name):
+        # TODO: will count duplicate lines, need to fix, should be error or calling `collector.py` too many times
+        """
+        Get the size of the file in the Elasticsearch
+        file_name in query is the path of the file
+        """
+        es = self.get_instance()
+        # count the unique line of the file
+        query = {
+            "size": 0,
+            "query": {
+                "match": {
+                    "path": file_name
+                }
+            },
+            "aggs": {
+                "lines": {
+                    "cardinality": {
+                        "field": "line_number"
+                    }
+                }
+            }
+        }
+        response = es.search(index=dev_config['collector']['index'], body=query)
+        return response['hits']['total']['value']
+
+
+    def get_files(self) -> list:
+        """
+        Get a list of files name store in the Elasticsearch, assume number of files is less than 1000
+        """
+        es = self.get_instance()
+        query = {
+            "size": 0,
+            "aggs": {
+                "files": {
+                    "terms": {
+                        "field": "path.keyword",
+                        "size": 1000
+                    }
+                }
+            }
+        }
+
+        response = es.search(index=dev_config['collector']['index'], body=query)
+        files = [bucket['key'] for bucket in response['aggregations']['files']['buckets']]
+        return files
+
+    def get_file_snapshot(self, snapshot_size: int, earliest_timestamp: datetime, file_name : str,  index_name: str) -> dict:
+        """
+        Fetch a snapshot of log lines from Elasticsearch for a given file name.
+        the snapshot size is configurable by devconfig['llm']['snapshot_size']
+        Too large snapshot size may cause exceeding the output limit of the LLM model.
+        default snapshot size is 1000
+        """
+        es = self.get_instance()
+
+        # Initial query with scroll enabled to fetch all logs after earliest_timestamp
+        # make es field configurable
+        query = {
+            "size": 1000,  # Fetch in chunks
+            "query": {
+                "bool": {
+                    "must": [
+                        {"range": {"timestamp": {"gt": earliest_timestamp.strftime("%Y-%m-%dT%H:%M:%S")}}},
+                        {"match": {"path": file_name}}  # Filter by file name (assuming 'path' stores file name)
+                    ]
+                }
+            },
+            "sort": [{"lineNumber": "asc"}]  # Sort by line number instead of timestamp
+        }
+
+        # count the lines return in the search
+
+
+
+# Start scrolling
+        response = es.search(
+                index=index_name,
+                body=query,
+                scroll="2m"
+                )
+        scroll_id = response["_scroll_id"]
+        scroll_size = len(response["hits"]["hits"])
+
+        log_data = {}
+
+        while scroll_size > 0:
+            for hit in response["hits"]["hits"]:
+                log_data[hit["_source"]["lineNumber"]] = hit["_source"]["line"]
+            response = es.scroll(scroll_id=scroll_id, scroll="2m")
+            scroll_id = response["_scroll_id"]
+            scroll_size = len(response["hits"]["hits"])
+
+        # Clear the scroll context in Elasticsearch
+        es.clear_scroll(scroll_id=scroll_id)
+
+        # If there's not enough data, return all available logs
+        if len(log_data) <= snapshot_size:
+            return log_data
+
+        # Randomly select continue 'snapshot_size' lines from the fetched logs
+        line_numbers = list(log_data.keys())
+        start_index = random.randint(0, len(line_numbers) - snapshot_size)
+        snapshot = {}
+        for i in range(start_index, start_index + snapshot_size):
+            snapshot[line_numbers[i]] = log_data[line_numbers[i]]
+
+        return snapshot
+
+def main():
+    start_container()
+    start_kibana_gui()
+    pass
+
+if __name__ == '__main__':
+    main()

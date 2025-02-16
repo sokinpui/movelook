@@ -1,25 +1,24 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+import tiktoken
 import yaml
 import os
 import random
 from datetime import datetime
-from es_engine import ESClient
-from analyzer import Analyzer
-import llm_gemini
-import json
+import es_engine
+from typing import Tuple
 
-from pydantic import BaseModel, TypeAdapter
-# import google.generativeai as genai
-from google import genai
+from pydantic import BaseModel, Field
+import os
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(dir_path, 'devconfig.yml')
-with open(config_path, 'r') as f:
-    devconfig = yaml.safe_load(f)
+_dir_path = os.path.dirname(os.path.realpath(__file__))
+_config_path = os.path.join(_dir_path, 'devconfig.yml')
+with open(_config_path, 'r') as f:
+    _dev_config = yaml.safe_load(f)
 
-snapshot_check_prompt = f"""
+_snapshot_check_prompt = f"""
 Given the follow log, please check if there contains any potential issues.
 
-You should give a explanation of the potential issues and the line numbers related to this issue.
+You should give a very detail explanation of the potential issues and the line numbers related to this issue.
 don't give any line number within the explanation.
 only return line number if you think this line is related to the potential issues.
 if you think there is no potential issues, don't return any line number.
@@ -29,153 +28,182 @@ log structure: lineNumber: logLine
 Log content:\n
 """
 
-def parsed_snapshot(snapshot):
+def parsed_snapshot(snapshot : dict) -> str:
+    """
+    Parse the snapshot of log with line numbers
+    e.g. {1: "log line 1", 2: "log line 2", ...}
+    """
     log = "\n".join([f"{line_number}: {log_line}" for line_number, log_line in snapshot.items()])
     return log
 
-def get_file_snapshot(snapshot_size: int, earliest_timestamp: datetime, file_name : str,  index_name: str):
-    es = ESClient().get_instance()
 
-    # Initial query with scroll enabled to fetch all logs after earliest_timestamp
-    # make es field configurable
-    query = {
-        "size": 1000,  # Fetch in chunks
-        "query": {
-            "bool": {
-                "must": [
-                    {"range": {"timestamp": {"gt": earliest_timestamp.strftime("%Y-%m-%dT%H:%M:%S")}}},
-                    {"match": {"path": file_name}}  # Filter by file name (assuming 'path' stores file name)
-                ]
-            }
-        },
-        "sort": [{"lineNumber": "asc"}]  # Sort by line number instead of timestamp
-    }
-
-    # Start scrolling
-    response = es.search(
-            index=index_name,
-            body=query,
-            scroll="2m"
-            )
-    scroll_id = response["_scroll_id"]
-    scroll_size = len(response["hits"]["hits"])
-
-    log_data = {}
-
-    while scroll_size > 0:
-        for hit in response["hits"]["hits"]:
-            log_data[hit["_source"]["lineNumber"]] = hit["_source"]["line"]
-        response = es.scroll(scroll_id=scroll_id, scroll="2m")
-        scroll_id = response["_scroll_id"]
-        scroll_size = len(response["hits"]["hits"])
-
-    # Clear the scroll context in Elasticsearch
-    es.clear_scroll(scroll_id=scroll_id)
-
-    # If there's not enough data, return all available logs
-    if len(log_data) <= snapshot_size:
-        return log_data
-
-    # Randomly select continue 'snapshot_size' lines from the fetched logs
-    line_numbers = list(log_data.keys())
-    start_index = random.randint(0, len(line_numbers) - snapshot_size)
-    snapshot = {}
-    for i in range(start_index, start_index + snapshot_size):
-        snapshot[line_numbers[i]] = log_data[line_numbers[i]]
-
-    return snapshot
-
-def get_list_of_files() -> list:
-    es = ESClient().get_instance()
-    query = {
-        "size": 0,
-        "aggs": {
-            "files": {
-                "terms": {
-                    "field": "path.keyword",
-                    "size": 1000
-                }
-            }
-        }
-    }
-
-    response = es.search(index=devconfig['collector']['index'], body=query)
-    files = [bucket['key'] for bucket in response['aggregations']['files']['buckets']]
-    return files
-
-class LLM_analyzer(Analyzer):
+class LLMBot():
     def __init__(self, config):
-        super().__init__(config)
+        self.config = self.read_config(config)
+        self._es = es_engine.ESClient()
+        self.__summary_index = _dev_config["llm"]['index']['summary']
 
-    def count_tokens(self, model, prompt):
-        if model == "gemini":
-            return llm_gemini.count_tokens(prompt)
+        # support different models
+        model = self.config["llm"]['model']
+        if "gemini" in model:
+            # user should define the api key inthe environment variable
+            api_key = os.environ['GENAI_API_KEY']
+            if api_key is None:
+                raise ValueError("Please define GENAI_API_KEY in the environment variable")
+            os.environ["GOOGLE_API_KEY"] = api_key
+            self.llm = ChatGoogleGenerativeAI(model=model)
 
-    def generate(self, model, prompt):
-        if model == "gemini":
-            return llm_gemini.generate_response(prompt)
+    def read_config(self, config_path):
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+        return config
 
-def test(prompt):
-    config = "../config.yml"
-    llm = LLM_analyzer(config)
-    files = "OpenSSH_2K.log"
+    def count_tokens(self, prompt):
+        # approximate token count, this is used by GPT-4
+        tokenizer = tiktoken.get_encoding("cl100k_base")
 
-    snapshot = get_file_snapshot(
-        snapshot_size=devconfig["analyzer"]['llm']['snapshot_size'],
-        earliest_timestamp=datetime(2022, 1, 1),
-        file_name=files,
-        index_name=devconfig['collector']['index']
-    )
-    log = parsed_snapshot(snapshot)
-    print(f"Line number range: {min(snapshot.keys())} - {max(snapshot.keys())}")
-    prompt += log
+        tokens = tokenizer.encode(prompt)
+        token_count = len(tokens)
+        return token_count
 
-    # use gemini model to generate response
-    total_tokens = llm.count_tokens("gemini", prompt)
-    print(f"Total tokens: {total_tokens}")
-    response = llm_gemini.generate_response(prompt)
-    print(response)
 
-    # insert reponse to files
-    with open("response.txt", "w") as f:
-        f.write(response)
-    # Load the configuration
+    def generate(self, prompt, schema):
+        """
+        schema: pydantic model to structure output
+        e.g.
+        class Person(BaseModel):
+                explanation: str = Field(description: xxx)
+                linesNumber: list[int] = Field(description: xxx)
+        """
+        if schema:
+            llm = self.llm.with_structured_output(schema)
+            response = llm.invoke(prompt)
+            return response
+        response = self.llm.invoke(prompt)
+        return response
+
+    def summarize_files(self):
+        """
+        Summarize the collect files,
+        get a snapshot of the log files for summarization should be enough
+        insert the summarized information of the files back to Database
+        """
+        files = self._es.get_files()
+
+        for file in files:
+
+            snapshot = self._es.get_file_snapshot(
+                # snapshot_size=_dev_config['llm']['snapshot_size'],
+                snapshot_size=1000,
+                earliest_timestamp=datetime(2022, 1, 1),
+                file_name=file,
+                index_name=_dev_config['collector']['index']
+            )
+
+            log = parsed_snapshot(snapshot)
+
+            with open("./prompt/summarize_file.txt", "r") as f:
+                prompt = f.read()
+
+            # replace the placeholder inside prompt
+            prompt = prompt.replace("{log}", log)
+            prompt = prompt.replace("{file_name}", os.path.basename(file))
+
+            response = self.generate(prompt, None)
+            summary = response.content
+
+            # debug print with color
+            print(f"Summary for file {file}: {summary}\n")
+
+            # isnert the response back to the database
+            es = self._es.get_instance()
+            body = {
+                "summary": summary,
+                "path": file,
+                'timestamp': datetime.now(),
+            }
+            try:
+                es.update_by_query(index=self.__summary_index, body=body)
+            except Exception as e:
+                es.index(index=self.__summary_index, body=body)
+
+    def filter_related_files(self, files: list, event: str) -> Tuple[list, str]:
+        """
+        Filter the files that are related to the potential issues
+        """
+        # get each file's summary
+
+        summary = {}
+        related_files = []
+
+        es = self._es.get_instance()
+
+        for file in files:
+            query = {
+                    "query": {
+                        "match": {
+                            "path": file
+                        }
+                    },
+            }
+            response = es.search(index=self.__summary_index, body=query)
+
+            if response['hits']['total']['value'] > 0:
+                summary[file] = response['hits']['hits'][0]['_source']['summary']
+
+        # use the model to filter the related files, give a structured output
+        # define the schema
+        class RelatedFiles(BaseModel):
+            relatedFiles: list[str] = Field(description="list of related files")
+            explanation: str = Field(description="explanation of the related files")
+
+        with open("./prompt/filter_related_files.txt", "r") as f:
+            prompt = f.read()
+
+        prompt = prompt.replace("{event}", event)
+        # convert the summary to string with format file: summary
+        summary = "\n".join([f"{file}: {summary}" for file, summary in summary.items()])
+        prompt = prompt.replace("{summary}", str(summary))
+
+        response = self.generate(prompt, RelatedFiles)
+
+        return response.relatedFiles, response.explanation
+
+    def analyze_files(self, files: list):
+        """
+        Analyze the log files and generate the potential issues
+        """
+        pass
+
+def main():
+    import json
+    config_path = "../config.yml"
+    es = es_engine.ESClient()
+    bot = LLMBot(config_path)
+
+    bot.summarize_files()
+
+    files = es.get_files()
+    print(f"Got {len(files)} files in total")
+
+    with open("./prompt/events.txt", "r") as f:
+        events = f.readlines()
+        print(f"find {len(events)} events")
+
+    related_files_to_event = {}
+
+    for event in events:
+        event = event.strip()
+        related_files, explanation = bot.filter_related_files(files, event)
+
+        related_files_to_event[event] = {
+                "related_files": related_files,
+                "explanation": explanation
+                }
+
+    with open("output/files_related_to_this_event.json", "w") as f:
+        f.write(json.dumps(related_files_to_event, indent=4))
+    pass
 
 if __name__ == "__main__":
-    # test(snapshot_check_prompt)
-
-    # prompt = f"""
-    # please provide me a list of potential issues that generally lookup by log analysis for cluter system log
-    # """
-    # response = llm_gemini.generate_response(prompt, config={})
-    # print(response)
-
-    list_of_files = get_list_of_files()
-    print(list_of_files)
-
-    # get the json files
-    with open("./lookup_questions.json", "r") as f:
-        lookup_aspects = f.readlines()
-
-    class Recipe1(BaseModel):
-        files: list[str]
-
-    gemini_response_config = {
-        'response_mime_type': 'application/json',
-        'response_schema': Recipe1,
-    }
-
-    for aspect in lookup_aspects:
-        prompt = f"""
-        if I want to analysis {aspect},
-
-        for the following files:
-        {list_of_files}
-
-        please provide me a list of files that highly related to {aspect}
-        """
-        response = llm_gemini.generate_response(prompt, config=gemini_response_config)
-        print(f"Aspect: {aspect}")
-        print(response)
-
-
+    main()

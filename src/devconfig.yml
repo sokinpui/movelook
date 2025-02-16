@@ -54,6 +54,8 @@ cleaner:
     # in days
   interval: 1
 
-analyzer:
-  llm:
-    snapshot_size: 1000
+llm:
+  snapshot_size: 1000
+  index:
+    summary: summary
+

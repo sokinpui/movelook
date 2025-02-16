@@ -1,0 +1,17 @@
+You are a skilled analyst specializing in system log files. Your task is to summarize the purpose of this log file.
+
+Please provide a concise summary that includes:
+1. **Overall Purpose**: What is the primary function of this log file?
+2. **Types of Information**: What types of information are recorded in these logs (e.g., event types, timestamps, source components, severity levels, user actions, system metrics)?
+4. Context: Briefly describe the system or application that generates the log files.
+
+Summary in around 1 sentence
+
+Make sure your summary is clear, informative, and actionable.
+
+Remember that Accuracy, conciseness, and clarity are key components of this task.
+
+# log file excerpt:
+file name: {file_name}
+
+{log}

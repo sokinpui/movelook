@@ -29,8 +29,8 @@ from elasticsearch import Elasticsearch
 # load_dotenv()
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(dir_path, 'devconfig.yml')
-with open(config_path, 'r') as f:
+dev_config_path = os.path.join(dir_path, 'devconfig.yml')
+with open(dev_config_path, 'r') as f:
     devconfig = yaml.safe_load(f)
 
 class Collector:
@@ -57,7 +57,6 @@ class Collector:
 # get their path recursively
     def start_collect(self):
         print(f"Processing logs in {self.directory}")
-        index = devconfig['collector']['index']
         for root, dirs, files in os.walk(self.directory):
             for log in files:
                 log_path = os.path.join(root, log)
@@ -84,11 +83,12 @@ class Collector:
                         doc = {
                               'line': lines[i],
                               'line_length': len(lines[i]),
+                              # store absolute path
                               'path': log_path,
                               'lineNumber': i,
                               'timestamp': datetime.datetime.now(),
                             }
-                        self.es.index(index=index, body=doc)
+                        self.es.index(index=devconfig['collector']['index'], body=doc)
                     print(f"Inserted {len(lines) - marker} lines of {log_path}")
 
                     # update marker to last line
@@ -104,7 +104,12 @@ class Collector:
         self.marker[log_path] = 0
         return self.marker[log_path]
 
+def main():
+    config_path = '../config.yml'
+    collector = Collector(config_path)
+    collector.start_collect()
+
 # test config reading, pring the config
 if __name__ == '__main__':
-    config_path = '../config.yml'
-    Collector(config_path).start_collect()
+    main()
+

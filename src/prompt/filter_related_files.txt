@@ -1,10 +1,11 @@
-### Task:
-I am analyzing system logs to investigate a specific event: **{event}**. I need to filter out the log files that are relevant to this event.
+I am analyzing system logs to monitor specific events and trends. I need to select required log for this specific event: {event}
 
-### Files and Their Purpose:
-Below is a list of log files and a brief summary of their content:
-{summary}
+### log Files and Summary:
+{log_and_summary}
+
+### Events and Trends to Monitor:
+{event}
 
 ### Instructions:
-1. Identify which files are most relevant to the **{event}** event.
-2. Ignore files that are unrelated to **{event}**.
+1. select the required log from above given log files. return the full name of the log file
+2. briefly explain why you selected them.

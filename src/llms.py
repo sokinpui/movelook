@@ -15,25 +15,16 @@ _config_path = os.path.join(_dir_path, 'devconfig.yml')
 with open(_config_path, 'r') as f:
     _dev_config = yaml.safe_load(f)
 
-_snapshot_check_prompt = f"""
-Given the follow log, please check if there contains any potential issues.
-
-You should give a very detail explanation of the potential issues and the line numbers related to this issue.
-don't give any line number within the explanation.
-only return line number if you think this line is related to the potential issues.
-if you think there is no potential issues, don't return any line number.
-
-log structure: lineNumber: logLine
-
-Log content:\n
-"""
-
 def parsed_snapshot(snapshot : dict) -> str:
     """
     Parse the snapshot of log with line numbers
     e.g. {1: "log line 1", 2: "log line 2", ...}
     """
     log = "\n".join([f"{line_number}: {log_line}" for line_number, log_line in snapshot.items()])
+    return log
+
+def parsed_snapshot_without_line_number(snapshot : dict) -> str:
+    log = "\n".join([f"{log_line}" for log_line in snapshot.values()])
     return log
 
 
@@ -94,26 +85,27 @@ class LLMBot():
 
             snapshot = self._es.get_file_snapshot(
                 # snapshot_size=_dev_config['llm']['snapshot_size'],
-                snapshot_size=1000,
+                snapshot_size=500,
                 earliest_timestamp=datetime(2022, 1, 1),
                 file_name=file,
                 index_name=_dev_config['collector']['index']
             )
 
-            log = parsed_snapshot(snapshot)
+            # pass the log with line numbers to the model
+            log = parsed_snapshot_without_line_number(snapshot)
 
             with open("./prompt/summarize_file.txt", "r") as f:
                 prompt = f.read()
 
-            # replace the placeholder inside prompt
-            prompt = prompt.replace("{log}", log)
-            prompt = prompt.replace("{file_name}", os.path.basename(file))
+            prompt = prompt.replace("{filename}", file)
+            prompt = prompt + "\n" + log
+
 
             response = self.generate(prompt, None)
             summary = response.content
 
-            # debug print with color
-            print(f"Summary for file {file}: {summary}\n")
+            print(f"file: {file}")
+            print(f"summary: {summary}\n")
 
             # isnert the response back to the database
             es = self._es.get_instance()
@@ -123,11 +115,20 @@ class LLMBot():
                 'timestamp': datetime.now(),
             }
             try:
-                es.update_by_query(index=self.__summary_index, body=body)
+                update_body = {
+                    "doc": {
+                        "summary": summary,  # New summary value
+                        "path": file,  # New path value
+                        "timestamp": datetime.now()  # Updated timestamp
+                    },
+                    "doc_as_upsert": True  # Create the document if it doesn't exist
+                }
+                es.update(index=self.__summary_index, id=file, body=update_body)
             except Exception as e:
+                print(f"Error: {e}")
                 es.index(index=self.__summary_index, body=body)
 
-    def filter_related_files(self, files: list, event: str) -> Tuple[list, str]:
+    def filter_related_files(self, files: list, event: str):
         """
         Filter the files that are related to the potential issues
         """
@@ -154,20 +155,23 @@ class LLMBot():
         # use the model to filter the related files, give a structured output
         # define the schema
         class RelatedFiles(BaseModel):
-            relatedFiles: list[str] = Field(description="list of related files")
-            explanation: str = Field(description="explanation of the related files")
+            relatedFiles: list[str] = Field(description="list of files that are required for the event")
+            explanation: str = Field(description="explain why the files are related to the event")
 
         with open("./prompt/filter_related_files.txt", "r") as f:
             prompt = f.read()
 
         prompt = prompt.replace("{event}", event)
+
         # convert the summary to string with format file: summary
-        summary = "\n".join([f"{file}: {summary}" for file, summary in summary.items()])
-        prompt = prompt.replace("{summary}", str(summary))
+        log_and_summary = "\n".join([f"{file}: {summary}" for file, summary in summary.items()])
+        prompt = prompt.replace("{log_and_summary}", log_and_summary)
 
         response = self.generate(prompt, RelatedFiles)
 
-        return response.relatedFiles, response.explanation
+        print(f"length: {len(response.relatedFiles)}, explanation: {response.explanation}")
+
+        return response.relatedFiles
 
     def analyze_files(self, files: list):
         """
@@ -181,28 +185,31 @@ def main():
     es = es_engine.ESClient()
     bot = LLMBot(config_path)
 
-    bot.summarize_files()
+    # bot.summarize_files()
 
     files = es.get_files()
-    print(f"Got {len(files)} files in total")
+
+    print(files)
 
     with open("./prompt/events.txt", "r") as f:
         events = f.readlines()
-        print(f"find {len(events)} events")
+        events = [event.strip() for event in events]
+        # remove empty lines
+        events = [event for event in events if event]
 
-    related_files_to_event = {}
-
+    from eventsGraph import EventGraph
+    graph = EventGraph()
     for event in events:
-        event = event.strip()
-        related_files, explanation = bot.filter_related_files(files, event)
+        graph.add_event(event)
+        related_files = bot.filter_related_files(files, event)
+        graph.add_file(event, related_files)
 
-        related_files_to_event[event] = {
-                "related_files": related_files,
-                "explanation": explanation
-                }
+    # print graph
+    for event, files in graph.graph.items():
+        print(f"event: {event}")
+        print(f"length: {len(files)}")
+        print(f"files: {files}\n")
 
-    with open("output/files_related_to_this_event.json", "w") as f:
-        f.write(json.dumps(related_files_to_event, indent=4))
     pass
 
 if __name__ == "__main__":

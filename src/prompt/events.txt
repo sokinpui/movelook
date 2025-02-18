@@ -1,2 +1,13 @@
 SSH Login Attempts: Monitor failed SSH login attempts to detect potential brute-force attacks or unauthorized access attempts.
-DDOS attrack
+
+Hardware Failures: Errors related to CPU, memory, disk, or network hardware.
+
+Software Crashes: Application or system software crashes, including segmentation faults, out-of-memory errors, and unhandled exceptions.
+
+I/O Errors: Disk read/write errors, network packet loss, or other I/O-related issues.
+
+High CPU/Memory Usage: Logs indicating excessive CPU or memory usage that could lead to system slowdowns or crashes.
+
+Disk Space: Warnings or errors related to low disk space or disk quota exceeded.
+
+Network Latency: High network latency or packet loss that could affect distributed computations.

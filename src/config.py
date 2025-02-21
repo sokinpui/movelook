@@ -1,0 +1,65 @@
+# log configuration
+LOGGER_NAME = 'MoveLookLogger'
+LOG_FILE = 'movelook.log'
+
+# Colima configuration
+# in GB
+COLIMA_MEMORY_SIZE = 4
+
+# Docker network configuration
+DOCKER_NETWORK_NAME = "movelook_network"
+
+# Docker volume configuration
+DOCKER_VOLUME_NAME = "movelook_volume"
+DOCKER_VOLUME_BIND_PATH = "/usr/share/elasticsearch/data"
+DOCKER_VOLUME_MODE = "rw"
+DOCKER_VOLUME_SETUP = {
+    DOCKER_VOLUME_NAME: {
+        "bind": DOCKER_VOLUME_BIND_PATH,
+        "mode": DOCKER_VOLUME_MODE
+    }
+}
+
+# Elastic search configuration
+ELASTIC_SEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.17.1"
+ELASTIC_SEARCH_CONTAINER_NAME = "movelook_elastic_search"
+ELASTIC_SEARCH_PORTS = {
+        "9200/tcp": 9200,
+}
+
+ELASTIC_SEARCH_ENVIRONMENT = {
+    "discovery.type": "single-node",
+    "xpack.security.enabled": False,
+    "xpack.license.self_generated.type": "trial"
+}
+
+# Kiabana configuration
+KIBANA_IMAGE = "docker.elastic.co/kibana/kibana:8.17.1"
+KIBANA_CONTAINER_NAME = "movelook_kibana"
+KIBANA_PORTS = {
+        "5601/tcp": 5601,
+}
+
+KIBANA_ENVIRONMENT = {
+    "ELASTICSEARCH_HOSTS": f"http://{ELASTIC_SEARCH_CONTAINER_NAME}:9200"
+}
+
+# Volume configuration
+
+# Docker container configuration
+DOCKER_DETACH = True
+DOCKER_REMOVE = False
+DOCKER_PORTS_PROTOCOL = "tcp"
+
+
+# Data storage ocnfiguration
+## index name
+INDEX_LAST_LINE_STATUS = "last_line_status"
+
+INDEX_LOG_FILES_STORAGE = "log_files_storage"
+
+
+# LLM model
+# gemini model
+GEMINI_LLM_MODEL = "gemini-2.0-flash"
+# GEMINI_LLM_MODEL = "gemini-1.5-flash-8b"

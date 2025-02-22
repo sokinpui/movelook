@@ -1,42 +1,17 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict
-from typing import Optional
 
 from database import Database, ElasticsearchDatabase
 from logger import Logger
 import config as cfg
 from log_file import LogFile
+import data_struct
 
 import os
-from datetime import datetime
 from elasticsearch.exceptions import NotFoundError
+from datetime import datetime
 
 ## data structure used in database
 
-@dataclass
-class BaseData:
-    def to_dict(self):
-        return asdict(self)
-
-@dataclass
-class LineOfLogFile(BaseData):
-    content: str
-    line_number: int
-    name: str
-    timestamp: datetime
-
-    def to_dict(self):
-        data = asdict(self)
-        # Convert datetime objects to strings
-        if isinstance(data['timestamp'], datetime):
-            data['timestamp'] = data['timestamp'].isoformat()  # Convert to ISO 8601 format
-        return data
-
-@dataclass
-class LastLineRead(BaseData):
-    last_line_read: int
-    id: int
-    name: str
 
 class NewCollector:
 
@@ -83,10 +58,11 @@ class NewCollector:
 
             for i in range(last_line_read, len(file_lines)):
                 line = file_lines[i]
-                line_of_log = LineOfLogFile(
+                line_of_log = data_struct.LineOfLogFile(
                         content=line,
                         line_number=i,
                         name=log.name,
+                        id=log.id,
                         timestamp=datetime.now()
                 )
                 db.insert(line_of_log.to_dict(), cfg.INDEX_LOG_FILES_STORAGE)
@@ -113,7 +89,7 @@ class NewCollector:
             return 0
 
     def _save_last_line_read(self, log_file: LogFile, db: Database, line_number: int):
-        last_line_status = LastLineRead(
+        last_line_status = data_struct.LastLineRead(
                 last_line_read=line_number,
                 id=log_file.id,
                 name=log_file.name
@@ -134,15 +110,37 @@ class NewCollector:
             self._logger.info(f"index {cfg.INDEX_LAST_LINE_STATUS} not found")
             db.insert(data=last_line_status.to_dict(), index=cfg.INDEX_LAST_LINE_STATUS)
         except Exception as e:
-            self._logger.error(f"Error updating last line read for log file {log_file.filepath}: {e}")
+            self._logger.error(f"Error updating last line read for log file {log_file.name}: {e}")
             exit(1)
 
 def main():
+
+    import random
+
     es_db = ElasticsearchDatabase()
 
     dir = "../log/"
     collector = NewCollector(dir)
-    collector.insert_logs_to_db(db=es_db, files=collector.log_files)
+    # collector.insert_logs_to_db(db=es_db, files=collector.log_files)
+
+
+    random_snapshot_size = 2
+
+    # random snapshot
+    for file in collector.log_files:
+        start = random.randint(0, file.get_total_lines(db=es_db)-random_snapshot_size)
+        size = random_snapshot_size
+
+        snapshot = file.get_snapshot(
+                id=file.id,
+                earliest_timestamp=datetime(2021, 1, 1),
+                start=start,
+                size=size,
+                db=es_db
+        )
+
+        print(f"Snapshot of {file.name} from line {start} to {size}, total lines: {file.get_total_lines(db=es_db)}")
+        print(snapshot)
 
 if __name__ == "__main__":
     main()

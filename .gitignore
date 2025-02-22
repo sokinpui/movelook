@@ -10,3 +10,4 @@ moveLook.md
 src/MoveLook.egg-info/
 pyproject.toml
 src/output/
+src/movelook.log

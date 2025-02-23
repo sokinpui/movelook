@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from elasticsearch import Elasticsearch
+
 from database import Database, ElasticsearchDatabase
 from logger import Logger
 import config as cfg
@@ -30,13 +32,17 @@ class NewCollector:
             for log in files:
 
                 try:
-                    log_path = os.path.join(root, log)
+                    path = os.path.join(root, log)
+                    log_path = os.path.abspath(path)
+
 
                     log_file = LogFile(log_path)
                     log_files.append(log_file)
-                    self._logger.info(f"Collected log file {log_file.to_dict()}")
                 except Exception as e:
                     self._logger.error(f"Error collecting log file {log}: {e}")
+                    exit(1)
+
+        self._logger.info(f"collector: Collected {len(log_files)} log files")
 
         return log_files
 
@@ -61,16 +67,28 @@ class NewCollector:
         return events
 
     def insert_events_to_db(self, db: Database, events: list[Event]):
+        # clear old record
+        try:
+            db.instance.indices.delete(index=cfg.INDEX_EVENTS_STORAGE, ignore=[400, 404])
+        except Exception as e:
+            self._logger.error(f"Error deleting events index: {e}")
+            print("Please check if the index exists and the connection to the Elasticsearch")
+            exit(1)
+
         for event in events:
             db.insert(event.to_dict(), cfg.INDEX_EVENTS_STORAGE)
             self._logger.info(f"collector: Inserted event {event.to_dict()}")
 
     def insert_logs_to_db(self, db: Database, files: list):
+        """
+        load the entire log file into memory
+        be careful this may cause memory overflow if the log file is too large
+        """
         for log in files:
             try:
                 last_line_read = self._get_last_line_read(log, db)
             except Exception as e:
-                self._logger.error(f"Error getting last line read for log file {log.name}: {e}")
+                self._logger.info(f"Error getting last line read for log file {log.name}: {e}")
                 last_line_read = 0
 
             with open(log.name, 'r') as f:
@@ -78,7 +96,6 @@ class NewCollector:
 
             if last_line_read > len(file_lines):
                 last_line_read = 0
-                self._save_last_line_read(log, db, last_line_read)
 
             for i in range(last_line_read, len(file_lines)):
                 line = file_lines[i]
@@ -93,6 +110,73 @@ class NewCollector:
             self._save_last_line_read(log, db, len(file_lines))
 
             self._logger.info(f"collector: Inserted {len(file_lines) - last_line_read} lines of {log.name}, range: {last_line_read} - {len(file_lines)}")
+
+    def insert_very_large_logs_into_db(self, db: ElasticsearchDatabase, files: list[LogFile]):
+        """
+        support for file append more line later,
+        but don't support modified line being recorded
+        """
+        from elasticsearch import helpers
+
+        for file in files:
+            batch_size = 1000 # number of lines insert at once
+            actions = []
+
+            try:
+                count = 0
+
+                with open(file.name, 'r') as f:
+
+                    try:
+                        last_line_read = self._get_last_line_read(file, db)
+                    except Exception as e:
+                        self._logger.info(f"Error getting last line read for log file {file.name}: {e}")
+                        last_line_read = 0
+
+                    for line in f:
+
+                        # skip lines read before
+                        if count < last_line_read:
+                            count += 1
+                            continue
+
+                        line_of_log = data_struct.LineOfLogFile(
+                                content=line,
+                                line_number=count,
+                                name=file.name,
+                                id=file.id,
+                                timestamp=datetime.now()
+                        )
+
+                        action = {
+                            "_index": cfg.INDEX_LOG_FILES_STORAGE,
+                            "_source": {
+                                "content": line_of_log.to_dict()
+                            }
+                        }
+                        actions.append(action)
+
+                        # if the number of actions reaches the batch size, insert them into the database
+                        if len(actions) >= batch_size:
+                            helpers.bulk(db.instance, actions)
+                            actions = [] # clear the actions list
+
+                        count += 1
+
+                # insert any remaining actions
+                if actions:
+                    helpers.bulk(db.instance, actions)
+
+                total_lines_procced = count - last_line_read
+                if total_lines_procced > 0:
+                    self._logger.info(f"collector: Inserted {total_lines_procced} lines of {file.name}:id {file.id}, range: {last_line_read} - {count}")
+
+                self._save_last_line_read(file, db, count)
+
+            except Exception as e:
+                self._logger.error(f"Error inserting lines of {file.name}: {e}")
+                exit(1)
+
 
 
     def _get_last_line_read(self, log_file: LogFile, db: Database) -> int:
@@ -133,22 +217,30 @@ class NewCollector:
             self._logger.error(f"Error updating last line read for log file {log_file.name}: {e}")
             exit(1)
 
+    def _clear_records(self, db: Database):
+        """
+        prepare for interface later to change if file is being modified
+        """
+        try:
+            db.instance.indices.delete(index=cfg.INDEX_LOG_FILES_STORAGE, ignore=[400, 404])
+            db.instance.indices.delete(index=cfg.INDEX_LAST_LINE_STATUS, ignore=[400, 404])
+        except Exception as e:
+            self._logger.error(f"Error deleting log files index: {e}")
+            print("Please check if the index exists and the connection to the Elasticsearch")
+            exit(1)
+
 def main():
 
-    import random
 
     es_db = ElasticsearchDatabase()
 
-    dir = "../log/"
+    dir = "/Users/mac/tmp/log/"
     collector = NewCollector(dir)
-    collector.insert_logs_to_db(db=es_db, files=collector.log_files)
-
-    events_file = "./prompt/events.txt"
-    events = collector.collect_events(file=events_file)
-
-    collector.insert_events_to_db(db=es_db, events=events)
+    # collector.insert_logs_to_db(db=es_db, files=collector.log_files)
+    collector.insert_very_large_logs_into_db(db=es_db, files=collector.log_files)
 
 
+    # import random
     # random_snapshot_size = 2
     #
     # # random snapshot
@@ -166,6 +258,19 @@ def main():
     #
     #     print(f"Snapshot of {file.name} from line {start} to {size}, total lines: {file.get_total_lines(db=es_db)}")
     #     print(snapshot)
+
+    # from llm_model import GeminiModel
+    # from llm_bot import LLMBot
+    #
+    # model = GeminiModel()
+    # events_file = "./prompt/events.txt"
+    # events = collector.collect_events(file=events_file)
+    #
+    # bot = LLMBot(model=model, db=es_db)
+    # events = bot.naming_events(events)
+    #
+    # collector.insert_events_to_db(db=es_db, events=events)
+
 
 if __name__ == "__main__":
     main()

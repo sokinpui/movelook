@@ -56,7 +56,9 @@ DOCKER_PORTS_PROTOCOL = "tcp"
 ## index name
 INDEX_LAST_LINE_STATUS = "last_line_status"
 
-INDEX_LOG_FILES_STORAGE = "log_files_storage"
+INDEX_LOG_FILES_STORAGE = "log_files"
+
+INDEX_EVENTS_STORAGE = "events"
 
 
 # LLM model

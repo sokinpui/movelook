@@ -23,26 +23,44 @@ class NewCollector:
         self._dir = dir
         self.log_files = self.collect_logs(dir)
 
-    def collect_logs(self, dir: str) -> list[LogFile]:
+    def collect_logs(self, directory: str) -> list[LogFile]:
+
+        # remove the tailing slash
+        directory = directory.rstrip('/')
 
         log_files = []
+        results = []
 
-        # collect logs recursively from the directory
-        for root, dirs, files in os.walk(dir):
-            for log in files:
+        for item in os.listdir(directory):
 
-                try:
-                    path = os.path.join(root, log)
-                    log_path = os.path.abspath(path)
+            if item.startswith('.'):
+                continue
 
+            item_path = os.path.join(directory, item)
+            results.append(item_path)
 
-                    log_file = LogFile(log_path)
-                    log_files.append(log_file)
-                except Exception as e:
-                    self._logger.error(f"Error collecting log file {log}: {e}")
-                    exit(1)
+        for result in results:
 
-        self._logger.info(f"collector: Collected {len(log_files)} log files")
+            if os.path.isfile(result):
+                result = os.path.abspath(result)
+                log_file = LogFile(result, os.path.basename(directory))
+                log_files.append(log_file)
+                continue
+
+            for root, dirs, files in os.walk(result):
+                dirs[:] = [d for d in dirs if not d.startswith('.')]
+
+                for log in files:
+
+                    try:
+                        path = os.path.join(root, log)
+                        log_path = os.path.abspath(path)
+
+                        log_file = LogFile(log_path, os.path.basename(result))
+                        log_files.append(log_file)
+                    except Exception as e:
+                        self._logger.error(f"Error collecting log file {log}: {e}")
+                        exit(1)
 
         return log_files
 
@@ -106,7 +124,7 @@ class NewCollector:
                         id=log.id,
                         timestamp=datetime.now()
                 )
-                db.insert(line_of_log.to_dict(), cfg.INDEX_LOG_FILES_STORAGE)
+                db.insert(line_of_log.to_dict(), "log_" + log.belongs_to)
             self._save_last_line_read(log, db, len(file_lines))
 
             self._logger.info(f"collector: Inserted {len(file_lines) - last_line_read} lines of {log.name}, range: {last_line_read} - {len(file_lines)}")
@@ -149,7 +167,7 @@ class NewCollector:
                         )
 
                         action = {
-                            "_index": cfg.INDEX_LOG_FILES_STORAGE,
+                            "_index": "log_" + file.belongs_to,
                             "_source": {
                                 "content": line_of_log.to_dict()
                             }
@@ -234,11 +252,12 @@ def main():
 
     es_db = ElasticsearchDatabase()
 
-    dir = "/Users/mac/tmp/log/"
+    dir = "../log/"
     collector = NewCollector(dir)
+    files = collector.log_files
+
     # collector.insert_logs_to_db(db=es_db, files=collector.log_files)
     collector.insert_very_large_logs_into_db(db=es_db, files=collector.log_files)
-
 
     # import random
     # random_snapshot_size = 2

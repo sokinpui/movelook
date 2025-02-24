@@ -12,3 +12,4 @@ pyproject.toml
 src/output/
 src/movelook.log
 src/tmp.py
+log/

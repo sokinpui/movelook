@@ -8,10 +8,11 @@ class LogFile:
 
     file_id = 0
 
-    def __init__(self, filename : str):
+    def __init__(self, filename : str, parent: str):
         LogFile.file_id += 1
         self.id = LogFile.file_id
 
+        self.belongs_to = parent
         self.name = filename
         self.description = ""
         self.related_events = []

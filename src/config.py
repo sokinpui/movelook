@@ -54,7 +54,7 @@ DOCKER_PORTS_PROTOCOL = "tcp"
 
 # Data storage ocnfiguration
 ## index name
-INDEX_LAST_LINE_STATUS = "last_line_status"
+INDEX_LAST_LINE_STATUS = "log_last_line_status"
 
 INDEX_LOG_FILES_STORAGE = "log_files"
 

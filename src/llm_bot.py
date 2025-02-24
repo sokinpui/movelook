@@ -50,11 +50,11 @@ class LLMBot:
         """
 
         class schema(BaseModel):
-            name: str = Field(description="The name of the event")
+            name: str = Field(description="a short name for this event")
 
         for event in events:
-            name = self.model.generate(prompt="give this event a short name" + event.description, schema=schema)
-            event.name = name
+            response = self.model.generate(prompt="give this event a short name in 2 to 3 words" + event.description, schema=schema)
+            event.name = response.name
 
         return events
 

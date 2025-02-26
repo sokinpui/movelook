@@ -1,12 +1,12 @@
-from container_manger import ContainerManager
-from collector import Collector
-from database import Database
+from container_manger import ContainerManager, DockerManager
+from new_collector import NewCollector
+from database import Database, ElasticsearchDatabase
 from llm_bot import LLMBot
 
 class LogAnalyzerSystem:
     def __init__(self,
                  container_manager : ContainerManager,
-                 collector : Collector,
+                 collector : NewCollector,
                  database : Database,
                  llm_bot : LLMBot,
                  ):
@@ -17,3 +17,9 @@ class LogAnalyzerSystem:
 
     def run(self):
         pass
+
+def main():
+    pass
+
+if __name__ == '__main__':
+    main()

@@ -15,7 +15,7 @@ class LLMModel():
         self._logger = Logger()
         self.model = None
 
-    def generate(self, prompt: str, schema):
+    def generate(self, prompt, schema=None):
         if schema:
             model = self.model.with_structured_output(schema)
             structured_output = model.invoke(prompt)

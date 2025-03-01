@@ -33,6 +33,9 @@ ELASTIC_SEARCH_ENVIRONMENT = {
     "xpack.license.self_generated.type": "trial"
 }
 
+ELASTIC_SEARCH_URL = f"http://localhost:9200"
+
+
 # Kiabana configuration
 KIBANA_IMAGE = "docker.elastic.co/kibana/kibana:8.17.1"
 KIBANA_CONTAINER_NAME = "movelook_kibana"
@@ -60,8 +63,10 @@ INDEX_LOG_FILES_STORAGE = "log_files"
 
 INDEX_EVENTS_STORAGE = "events"
 
+INDEX_VECTOR_STORE = "vector_store"
 
 # LLM model
 # gemini model
 GEMINI_LLM_MODEL = "gemini-2.0-flash"
 # GEMINI_LLM_MODEL = "gemini-1.5-flash-8b"
+

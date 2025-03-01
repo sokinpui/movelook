@@ -29,7 +29,6 @@ class NewCollector:
         directory = directory.rstrip('/')
 
         log_files = []
-        results = []
 
         for item in os.listdir(directory):
 
@@ -37,17 +36,14 @@ class NewCollector:
                 continue
 
             item_path = os.path.join(directory, item)
-            results.append(item_path)
 
-        for result in results:
-
-            if os.path.isfile(result):
-                result = os.path.abspath(result)
-                log_file = LogFile(result, os.path.basename(directory))
+            if os.path.isfile(item_path):
+                item_path = os.path.abspath(item_path)
+                log_file = LogFile(item_path, os.path.basename(directory))
                 log_files.append(log_file)
                 continue
 
-            for root, dirs, files in os.walk(result):
+            for root, dirs, files in os.walk(item_path):
                 dirs[:] = [d for d in dirs if not d.startswith('.')]
 
                 for log in files:
@@ -56,7 +52,7 @@ class NewCollector:
                         path = os.path.join(root, log)
                         log_path = os.path.abspath(path)
 
-                        log_file = LogFile(log_path, os.path.basename(result))
+                        log_file = LogFile(log_path, os.path.basename(item_path))
                         log_files.append(log_file)
                     except Exception as e:
                         self._logger.error(f"Error collecting log file {log}: {e}")

@@ -4,7 +4,9 @@ from logger import Logger
 
 import requests
 from elasticsearch import Elasticsearch
+import config as cfg
 
+from langchain_elasticsearch import ElasticsearchStore
 
 class Database(ABC):
 
@@ -37,6 +39,7 @@ class ElasticsearchDatabase(Database):
     def __init__(self):
         self._logger = Logger()
         self.instance = self._connect()
+        self.vector_store = None
 
     def insert(self, data : dict, index : str):
         if self.instance is None:
@@ -72,13 +75,29 @@ class ElasticsearchDatabase(Database):
         self.instance.delete(index=index, id=id)
 
     def _connect(self) -> Elasticsearch | None:
+        es_url = cfg.ELASTIC_SEARCH_URL
         try:
-            requests.get('http://localhost:9200')
-            instance = Elasticsearch([ 'http://localhost:9200' ])
+            requests.get(es_url)
+            instance = Elasticsearch([es_url])
             self._logger.info("Connected to Elasticsearch")
             return instance
         except requests.exceptions.ConnectionError as e:
             self._logger.error(f"Error connecting to Elasticsearch: {e}")
             print("please check if Container is running")
             return None
+
+    def set_vector_store(self, embeddings):
+        vector_store = ElasticsearchStore(
+            es_url=cfg.ELASTIC_SEARCH_URL,
+            index_name=cfg.INDEX_VECTOR_STORE,
+            embedding=embeddings,
+        )
+        return vector_store
+
+def main():
+    es = ElasticsearchDatabase()
+    print(cfg.ELASTIC_SEARCH_URL)
+
+if __name__ == "__main__":
+    main()
 

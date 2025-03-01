@@ -1,4 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from vertexai.preview import tokenization
 import tiktoken
 from pydantic import BaseModel, Field
 import os
@@ -7,13 +9,14 @@ import config as cfg
 from logger import Logger
 
 
-class LLMModel():
+class LLMModel:
     """
     provide common interface for Gemini model, but user can still access the model-specific methods via `self.model`
     """
     def __init__(self):
         self._logger = Logger()
         self.model = None
+        self.embedding = None
 
     def generate(self, prompt, schema=None):
         if schema:
@@ -47,28 +50,29 @@ class GeminiModel(LLMModel):
 
         try:
             self.model = ChatGoogleGenerativeAI(model=model)
+
+            # set the embedding model
+            self.embedding = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+
             self._logger.info("Gemini model is using, Gemini model initialized")
         except Exception as e:
             self._logger.error(f"Error in initializing Gemini model: {e}")
+
+    def token_count(self, prompt: str) -> int:
+
+        tokenizer = tokenization.get_tokenizer_for_model(cfg.GEMINI_LLM_MODEL.replace("2.0", "1.5"))
+
+        result = tokenizer.count_tokens(prompt)
+        return result.total_tokens
+
+
 
 
 def main():
     # test the Gemini model
     model = GeminiModel()
-
     prompt = "What is the capital of France?"
-    response = model.generate(prompt, None)
-    print("Unstructured output:")
-    print(response + "\n")
-
-    class TestSchema(BaseModel):
-        question: str
-        answer: str
-
-    response = model.generate(prompt="What is the capital of France?", schema=TestSchema)
-    print("Structured output:")
-    print(f"Question: {response.question}")
-    print(f"Answer: {response.answer}")
+    print(f"token count: {model.token_count(prompt)}")
 
 if __name__ == "__main__":
     main()

@@ -6,7 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import prompts
 
 from logger import Logger
-from database import ElasticsearchDatabase
+from database import ElasticsearchDatabase, Database
 import prompts
 import config as cfg
 from llm_model import LLMModel
@@ -21,25 +21,25 @@ class RAGManager:
     Use Elasticsearch to provide a vector store for the embedded documents
     """
     def __init__(self,
-                 vector_store,
+                 name : str, # provide a name for this set of documents
+                 db : Database,
                  embeddings,
                  model : LLMModel ,
                  multi_threading : bool = False
         ):
+        self.name = name
+        self._db_index = f"{cfg.INDEX_VECTOR_STORE}_{name}"
+
+
         self._model = model
         self._embeddings = embeddings
-        self._vector_store = vector_store
+        self._vector_store = db.set_vector_store(embeddings=embeddings, index=self._db_index)
 
         self._multi_threading = multi_threading
-        self._is_loaded = False
         self._logger = Logger()
 
 
     def retrieve(self, prompt : str) -> str:
-        if not self._is_loaded:
-            self._logger.error("RAG: No documents loaded")
-            return ""
-
         retrieved_docs = self._vector_store.similarity_search(prompt)
 
         docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
@@ -90,17 +90,12 @@ class RAGManager:
         """
         should provided a directory of markdown files
         """
-        self._is_loaded = False
 
-        if db.instance.indices.exists(index=cfg.INDEX_VECTOR_STORE):
-            db.instance.indices.delete(index=cfg.INDEX_VECTOR_STORE)
-
-            self._logger.info(f"RAG: Deleted existing index {cfg.INDEX_VECTOR_STORE}")
-        else:
-            self._logger.info(f"RAG: No existing index {cfg.INDEX_VECTOR_STORE}")
+        if db.instance.indices.exists(index=self._db_index):
+            db.instance.indices.delete(index=self._db_index)
+            self._logger.info(f"RAG: earse old documents from {self._db_index}")
 
         self._load_from_directory(directory)
-
 
 def main():
     from llm_model import GeminiModel
@@ -110,12 +105,19 @@ def main():
     es_db = ElasticsearchDatabase()
 
     embeddings = model.embedding
-    vector_store = es_db.set_vector_store(embeddings=embeddings)
 
-    rag_manager = RAGManager(vector_store, embeddings, model)
+    rag_manager = RAGManager(name="rag", db=es_db, embeddings=embeddings, model=model)
+
     # rag_manager.load_from_directory("../rag")
-    rag_manager.update_rag_from_directory("../rag", es_db)
+    # rag_manager.update_rag_from_directory("../rag", es_db)
 
+    prompt = "which log are collected in this system?"
+    contextual_prompt = rag_manager.retrieve(prompt)
+
+    print(f"RAG: {contextual_prompt}")
+
+    res = model.generate(prompt=contextual_prompt)
+    print(f"Response: {res}")
 
 if __name__ == "__main__":
     main()

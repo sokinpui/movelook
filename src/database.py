@@ -30,6 +30,11 @@ class Database(ABC):
         """Delete data from the database."""
         pass
 
+    @abstractmethod
+    def set_vector_store(self, embeddings, index):
+        """Set the vector store for the database."""
+        pass
+
 class ElasticsearchDatabase(Database):
     """
     provide some simple interface for common operations,
@@ -86,10 +91,10 @@ class ElasticsearchDatabase(Database):
             print("please check if Container is running")
             return None
 
-    def set_vector_store(self, embeddings):
+    def set_vector_store(self, embeddings, index) -> ElasticsearchStore:
         vector_store = ElasticsearchStore(
             es_url=cfg.ELASTIC_SEARCH_URL,
-            index_name=cfg.INDEX_VECTOR_STORE,
+            index_name=index,
             embedding=embeddings,
         )
         return vector_store

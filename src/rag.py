@@ -55,11 +55,10 @@ class RAGManager:
                 load_hidden = False,
                 recursive = True,
                 use_multithreading = self._multi_threading,
-                show_progress = True,
         )
 
         try:
-            print(f"RAG: Loading documents from {directory}")
+            self._logger.info(f"RAG: Loading documents from {directory}.....")
             rag_docs = loader.load()
             self._logger.info(f"RAG: Loaded {len(rag_docs)} documents from {directory}")
         except Exception as e:
@@ -108,8 +107,7 @@ def main():
 
     rag_manager = RAGManager(name="rag", db=es_db, embeddings=embeddings, model=model)
 
-    # rag_manager.load_from_directory("../rag")
-    # rag_manager.update_rag_from_directory("../rag", es_db)
+    rag_manager.update_rag_from_directory("../rag", es_db)
 
     prompt = "which log are collected in this system?"
     contextual_prompt = rag_manager.retrieve(prompt)

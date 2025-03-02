@@ -6,12 +6,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import prompts
 
 from logger import Logger
-from database import ElasticsearchDatabase, Database
+from database import ElasticsearchDatabase
 import prompts
 import config as cfg
 from llm_model import LLMModel
 
-_CHUNK_SIZE = 512
+_CHUNK_SIZE = 512 # chunk size of the documents
 _CHUNK_OVERLAP = 20
 
 
@@ -22,14 +22,13 @@ class RAGManager:
     """
     def __init__(self,
                  name : str, # provide a name for this set of documents
-                 db : Database,
+                 db : ElasticsearchDatabase,
                  embeddings,
                  model : LLMModel ,
                  multi_threading : bool = False
         ):
         self.name = name
         self._db_index = f"{cfg.INDEX_VECTOR_STORE}_{name}"
-
 
         self._model = model
         self._embeddings = embeddings
@@ -40,6 +39,9 @@ class RAGManager:
 
 
     def retrieve(self, prompt : str) -> str:
+        """
+        get retrieved context from the vector store
+        """
         retrieved_docs = self._vector_store.similarity_search(prompt)
 
         docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)

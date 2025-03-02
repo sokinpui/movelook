@@ -42,7 +42,7 @@ class RAGManager:
         """
         get retrieved context from the vector store
         """
-        retrieved_docs = self._vector_store.similarity_search(prompt)
+        retrieved_docs = self._vector_store.similarity_search(query=prompt, k=4)
 
         docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
 
@@ -107,14 +107,15 @@ def main():
 
     embeddings = model.embedding
 
-    rag_manager = RAGManager(name="rag", db=es_db, embeddings=embeddings, model=model)
+    rag_manager = RAGManager(name="log_info", db=es_db, embeddings=embeddings, model=model)
 
-    rag_manager.update_rag_from_directory("../rag", es_db)
+    rag_manager.update_rag_from_directory("../rag/docs/", es_db)
 
-    prompt = "which log are collected in this system?"
+    prompt = "I am going to analyze logs from this system, what applications is running in this system?"
     contextual_prompt = rag_manager.retrieve(prompt)
 
-    print(f"RAG: {contextual_prompt}")
+    print(f"Contextual Prompt: {model.token_count(contextual_prompt)}")
+
 
     res = model.generate(prompt=contextual_prompt)
     print(f"Response: {res}")

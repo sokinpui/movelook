@@ -1,0 +1,26 @@
+## 1. Introduction to OpenSSH
+OpenSSH (Open Secure Shell) is the leading open-source implementation of the SSH (Secure Shell) protocol, widely used for secure remote login and file transfer over untrusted networks. Developed as part of the OpenBSD project, OpenSSH provides a suite of tools—including ssh, scp, and sftp—for encrypted communication between clients and servers. It is renowned for its security, reliability, and flexibility, making it a standard connectivity tool in both research and operational environments.
+
+Key features of OpenSSH include:
+
+Encryption: Secures all communication using strong cryptographic algorithms.
+Authentication: Supports multiple methods, such as passwords, public keys, and multi-factor authentication.
+Tunneling: Enables secure transmission of arbitrary data through SSH tunnels.
+In this system, OpenSSH logs were collected from a server running in a lab environment over a period exceeding 28 days. These logs capture server activities and interactions, offering a dataset for studying SSH usage patterns, security events, and potential anomalies.
+
+## 2. System Overview
+The logs were gathered from an OpenSSH server deployed in a lab setting, reflecting a mix of normal activities—such as user logins and file transfers—and potential security-related events (e.g., failed login attempts).
+
+The logs are stored in a single file, SSH.log, which aggregates all recorded events from the OpenSSH server during this period. This dataset is suitable for analyzing server behavior, detecting security incidents, and mining operational insights.
+
+## 4. Contents of the Logs
+OpenSSH logs typically include the following types of information:
+
+Timestamps: Date and time of each event (e.g., 2025-03-02 13:45:12).
+Connection Events: Details about client connections, including:
+Successful logins (e.g., "Accepted publickey for userX from IP").
+Failed login attempts (e.g., "Failed password for userY from IP").
+Disconnections (e.g., "Connection closed by IP").
+Authentication Details: Methods used (e.g., password, public key) and outcomes.
+Errors and Warnings: Issues like "Invalid user," "Connection timeout," or "Permission denied."
+Session Activity: Commands executed, file transfers (via scp or sftp), or tunneling events, depending on logging verbosity.

@@ -1,0 +1,10 @@
+Dec 10 11:00:03 LabSZ sshd[25224]: Failed password for root from 183.62.140.253 port 40454 ssh2
+Dec 10 09:18:35 LabSZ sshd[24643]: Failed password for invalid user admin from 103.207.39.16 port 46723 ssh2
+Dec 10 09:12:04 LabSZ sshd[24471]: Invalid user user from 103.99.0.122
+Dec 10 09:12:09 LabSZ sshd[24473]: error: Received disconnect from 103.99.0.122: 14: No more user authentication methods available. [preauth]
+Dec 10 09:11:53 LabSZ sshd[24462]: input_userauth_request: invalid user admin [preauth]
+Dec 10 11:00:24 LabSZ sshd[25250]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=183.62.140.253  user=root
+Dec 10 10:56:21 LabSZ sshd[24992]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=183.62.140.253  user=root
+Dec 10 09:18:54 LabSZ sshd[24649]: Failed password for invalid user nagios1 from 187.141.143.180 port 43647 ssh2
+Dec 10 09:19:42 LabSZ sshd[24667]: reverse mapping checking getaddrinfo for customer-187-141-143-180-sta.uninet-ide.com.mx [187.141.143.180] failed - POSSIBLE BREAK-IN ATTEMPT!
+Dec 10 09:12:35 LabSZ sshd[24492]: error: Received disconnect from 103.99.0.122: 14: No more user authentication methods available. [preauth]

@@ -5,7 +5,6 @@ class Event:
     def __init__(self, description : str):
         Event.event_id += 1
         self.id = Event.event_id
-        self.name = ""
         self.description = description
         self.related_files = []
 

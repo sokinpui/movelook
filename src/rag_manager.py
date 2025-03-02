@@ -3,11 +3,9 @@ from langchain_core import embeddings
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-import prompts
-
 from logger import Logger
 from database import ElasticsearchDatabase
-import prompts
+import prompts.rag as p
 import config as cfg
 from llm_model import LLMModel
 
@@ -42,18 +40,18 @@ class RAGManager:
         """
         get retrieved context from the vector store
         """
-        retrieved_docs = self._vector_store.similarity_search(query=prompt, k=4)
+        retrieved_docs = self._vector_store.similarity_search(query=prompt, k=5)
 
         docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
 
-        contextual_prompt = prompts.RAG_PROMPT(question=prompt, context=docs_content)
+        contextual_prompt = p.Prompt(question=prompt, context=docs_content)
 
         return contextual_prompt
 
-    def _load_from_directory(self, directory : str):
+    def _load_from_directory(self, directory : str, file_extension : str = "md"):
         loader = DirectoryLoader(
                 path=directory,
-                glob="**/*.md",
+                glob=f"**/*.{file_extension}",
                 load_hidden = False,
                 recursive = True,
                 use_multithreading = self._multi_threading,
@@ -87,7 +85,7 @@ class RAGManager:
             self._logger.error(f"Error adding documents to vector store: {e}")
             exit(1)
 
-    def update_rag_from_directory(self, directory : str, db : ElasticsearchDatabase):
+    def update_rag_from_directory(self, directory : str, db : ElasticsearchDatabase, file_extension : str = "md"):
         """
         should provided a directory of markdown files
         """
@@ -96,29 +94,10 @@ class RAGManager:
             db.instance.indices.delete(index=self._db_index)
             self._logger.info(f"RAG: earse old documents from {self._db_index}")
 
-        self._load_from_directory(directory)
+        self._load_from_directory(directory, file_extension)
 
 def main():
-    from llm_model import GeminiModel
-    from database import ElasticsearchDatabase
-
-    model = GeminiModel()
-    es_db = ElasticsearchDatabase()
-
-    embeddings = model.embedding
-
-    rag_manager = RAGManager(name="log_info", db=es_db, embeddings=embeddings, model=model)
-
-    rag_manager.update_rag_from_directory("../rag/docs/", es_db)
-
-    prompt = "I am going to analyze logs from this system, what applications is running in this system?"
-    contextual_prompt = rag_manager.retrieve(prompt)
-
-    print(f"Contextual Prompt: {model.token_count(contextual_prompt)}")
-
-
-    res = model.generate(prompt=contextual_prompt)
-    print(f"Response: {res}")
+    pass
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,10 @@
+369186 node-168 node status 1085568282 0 running
+173915 node-59 action start 1131220838 1 boot  (command 3951)
+2558879 node-D3 clusterfilesystem clusterfilesystem.not_served 1073126274 1 ClusterFileSystem: ServerFileSystem domain cluster_root_backup is no longer served by node node-96
+253687 node-D5 clusterfilesystem clusterfilesystem.not_served 1079069131 1 ClusterFileSystem: ServerFileSystem domain root23_local is no longer served by node node-182
+29376 Interconnect-1N00 switch_module error 1076183342 1 Linkerror event interval expired
+219199 node-161 unix.hw net.niff.up 1132154183 1 NIFF: node node-161 has detected an available network connection on network 0.0.0.0 via interface alt0
+2579066 Interconnect-1N02 switch_module error 1074207069 1 Linkerror event interval expired
+46581 node-117 node temperature 1076546891 1 ambient=32
+409269 node-195 node status 1091248620 1 configured out
+257965 Interconnect-0N00 switch_module fan 1133166706 1 Fan speeds ( 3552 3534 3391 **** 3515 3479 )

@@ -21,7 +21,7 @@ class NewCollector:
     def __init__(self, dir: str):
         self._logger = Logger()
         self._dir = dir
-        self.log_files = self.collect_logs(dir)
+        self.collected_files = self.collect_logs(dir)
 
     def collect_logs(self, directory: str) -> list[LogFile]:
 
@@ -250,10 +250,9 @@ def main():
 
     dir = "../log/"
     collector = NewCollector(dir)
-    files = collector.log_files
 
     # collector.insert_logs_to_db(db=es_db, files=collector.log_files)
-    collector.insert_very_large_logs_into_db(db=es_db, files=collector.log_files)
+    collector.insert_very_large_logs_into_db(db=es_db, files=collector.collected_files)
 
     # import random
     # random_snapshot_size = 2

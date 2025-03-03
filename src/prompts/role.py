@@ -13,6 +13,8 @@ The user may provide you some log line sample, you will know the format, structu
 
 
 ---
+\n
+\n
 """
 
 

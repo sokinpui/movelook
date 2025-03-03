@@ -5,4 +5,6 @@ def Prompt(question: str, context: str) -> str:
     Question: {question}
     Context: {context}
     Answer:
+    \n
+    \n
     """

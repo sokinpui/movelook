@@ -1,12 +1,24 @@
-def interpre_event_prompt(event):
+def interpre_event_prompt(event, files):
+
+    # get the unique value only
+    applications = set([file.belongs_to for file in files])
+
     return  f"""
-## Trace this event:
+    ## Trace this event:
     {event}
 
     To trace the event , we need to gather some information.
 
-    - what inforamtion that can get from system logs are required to trace the event?
-    - what application logs are required to trace the event?
+    - what inforamtion from the logs should be pay attention to trace the event?
+    - what are the applications that are related to the event?
+
+    ## application in the system
+    {applications}
+
+    ## your task
+
+    you must choose the most relevant information from the logs that can be used to trace the event, and the applications that are related to the event.
+    \n
     """
 
 
@@ -25,5 +37,20 @@ def filter_logs(event, message):
 
     ## search query
     the databsae is using elasticsearch, and access by python api
+    \n
     """
+
+def main():
+    from new_collector import NewCollector
+
+    dir = "../../../log"
+    collector = NewCollector(dir=dir)
+    files = collector.collect_logs(dir)
+
+    event = "The system is down"
+
+    print(interpre_event_prompt(event, files))
+
+if __name__ == "__main__":
+    main()
 

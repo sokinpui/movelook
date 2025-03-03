@@ -31,20 +31,20 @@ class Logger:
             self.logger.addHandler(file_handler)
             self.logger.addHandler(console_handler)
 
-    def info(self, message : str, *args, **kwargs) -> None:
-        self.logger.info(message, *args, **kwargs)
+    def info(self, message : str) -> None:
+        self.logger.info(message)
 
-    def debug(self, message : str, *args, **kwargs) -> None:
-        self.logger.debug(message, *args, **kwargs)
+    def debug(self, message : str) -> None:
+        self.logger.debug(message)
 
-    def warning(self, message : str, *args, **kwargs) -> None:
-        self.logger.warning(message, *args, **kwargs)
+    def warning(self, message : str) -> None:
+        self.logger.warning(message)
 
-    def error(self, message : str, *args, **kwargs) -> None:
-        self.logger.error(message, *args, **kwargs)
+    def error(self, message : str) -> None:
+        self.logger.error(message)
 
-    def critical(self, message : str, *args, **kwargs) -> None:
-        self.logger.critical(message, *args, **kwargs)
+    def critical(self, message : str) -> None:
+        self.logger.critical(message)
 
 def main():
     logger = Logger("test", "test.log")

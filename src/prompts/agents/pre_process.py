@@ -18,26 +18,62 @@ def interpre_event_prompt(event, files):
     ## your task
 
     you must choose the most relevant information from the logs that can be used to trace the event, and the applications that are related to the event.
+
+    Please analyze the event from multiple perspectives, such as chronological order, application interactions, potential causes, scope of impact,
+
     \n
     """
 
 
-def filter_logs(event, message):
+def filter_logs(event, info_for_tracing, apps):
     return f"""
-    ## Trace this event:
-    {event}
+    ## Role
+    You are a Log Filter Agent in a multi-agent system tasked with generating Elasticsearch search queries to filter system log lines for further analysis.
 
-    ## insight from other agents
-    {message}
+    ## Input
+    - **Event to Trace**: {event}
+    - **Tracing Information**: {info_for_tracing}
+    - **Relevant Applications**: {apps}
 
-    ## Your Task
-    with reference to some system logs sample, you will know the format, structure of the line in the logs. You should learn the general format of the logs instead of focusing the content
+    ## Task
+    1. Analyze the typical structure of system log lines based on common conventions (e.g., timestamp, log level, message, metadata fields like user_id or error_code).
+    2. Generate keywords or field-specific terms that can filter log lines related to the event `{event}`.
+    4. Ensure the query is broad enough to capture context but specific enough to avoid unrelated noise.
 
-    Then, you need to generate some keyword that can be used to filter the logs line that help tracing the event, the filtered lines will be further analysis by another agents
+    ## naming conventions in the elasticsearch
+    logs are organized in different indices based on the application name. For example, logs for the application `app1` are stored in the index `log_app1`.
 
-    ## search query
-    the databsae is using elasticsearch, and access by python api
-    \n
+    use simple match query to filter the logs based on the event, you should only search the given applications
+
+    ## data structure of the logs store in the elasticsearch
+    ```
+    {{
+        content=line,
+        line_number=i,
+        name=log.name,
+        id=log.id,
+        timestamp=datetime.now()
+    }}
+    ```
+
+    ## template of the search query
+    ```
+    {{
+        "query": {{
+            "bool": {{
+                "should": [
+                    {{ "match": {{ "content": "<pattern1>" }} }},
+                    {{ "match": {{ "content": "<pattern2>" }} }},
+                    .
+                    .
+                    .
+                    {{ "match": {{ "content": "<patternN>" }} }}
+                ]
+            }}
+        }},
+    }}
+    ```
+
     """
 
 def main():

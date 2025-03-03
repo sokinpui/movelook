@@ -18,7 +18,7 @@ class PreProcessAgentState(TypedDict):
     working_event: Event
     message: str
     files : List[LogFile]
-    selected_files_ids : List[int]
+    apps : List[str]
 
 class PreProcessAgent:
     def __init__(self, model: LLMModel, rag: RAGManager):
@@ -34,7 +34,7 @@ class PreProcessAgent:
         prompt = pap.interpre_event_prompt(event.description, files)
         retrieved_prompt = self._rag.retrieve(prompt)
 
-        class Prompt(BaseModel):
+        class schema(BaseModel):
             require_info : str = Field(description=f"""
                                        require information to trace the event from the log,
                                        and the applications that are relevant to the event.
@@ -44,27 +44,38 @@ class PreProcessAgent:
                                     that are related and required to trace the event.
                                     """)
 
-        response = self.model.generate(SYSTEM_PROMPT + retrieved_prompt, Prompt)
+        response = self.model.generate(SYSTEM_PROMPT + retrieved_prompt, schema=schema)
 
         print(f"require_info: {response.require_info}")
         print(f"apps: {response.apps}")
 
-        return { "message": response.require_info }
+        return {
+                "message": response.require_info,
+                "apps": response.apps,
+        }
 
     def filter_logs_lines(self, state: PreProcessAgentState) -> PreProcessAgentState | dict | None:
         self._logger.info(f"agents: {self.__class__.__name__}.filter_logs_lines:")
+
         event = state["working_event"]
         message = state["message"]
+        apps = state["apps"]
 
-        prompt = pap.filter_logs(event.description, message)
-
+        prompt = pap.filter_logs(event.description, message, apps)
         retrieved_prompt = self._rag.retrieve(prompt)
 
-        response = self.model.generate(SYSTEM_PROMPT + retrieved_prompt)
+        class schema(BaseModel):
+            search_queries : str = Field(description=f"""
+                                                the search queries to fileter the logs based on the event
+                                                """)
 
-        print(f"response: {response}")
+        response = self.model.generate(SYSTEM_PROMPT + retrieved_prompt, schema=schema)
+        import json
+        queries = json.loads(response.search_queries)
 
-        return { "message": response }
+        print(f"search_queries:\n{json.dumps(queries, indent=4)}")
+
+        return
 
 def test():
     from new_collector import NewCollector
@@ -75,7 +86,12 @@ def test():
 
     event = "The system is down"
 
-    print(pap.interpre_event_prompt(event, files))
+    info = "failed login attempts, authentication failures, invalid user attempts, brute-force attacks, and relevant timestamps"
+
+    apps = ["ssh"]
+
+    print(pap.filter_logs(event, info, apps))
+
 
 
 def main():
@@ -93,7 +109,9 @@ def main():
 
     # sys_info.update_rag_from_directory("../rag/docs/", es_db)
 
-    e1 = Event(description="want to find if there is high frequency of failed login attempts in the system logs")
+    e1 = Event(description="want to find if there is any high frequency of failed login attempts using ssh")
+    print(f"Event to trace: {e1.description}")
+
     agent = PreProcessAgent(model=model, rag=sys_info)
 
     state = {

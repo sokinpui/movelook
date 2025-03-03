@@ -49,7 +49,7 @@ class GeminiModel(LLMModel):
         os.environ["GOOGLE_API_KEY"] = api_key
 
         try:
-            self.model = ChatGoogleGenerativeAI(model=model)
+            self.model = ChatGoogleGenerativeAI(model=model, temperature=0)
 
             # set the embedding model
             self.embedding = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")

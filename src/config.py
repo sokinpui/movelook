@@ -6,6 +6,8 @@ LOG_FILE = 'movelook.log'
 # in GB
 COLIMA_MEMORY_SIZE = 4
 
+# Docker configuration
+# ==========================
 # Docker network configuration
 DOCKER_NETWORK_NAME = "movelook_network"
 
@@ -54,8 +56,10 @@ DOCKER_DETACH = True
 DOCKER_REMOVE = False
 DOCKER_PORTS_PROTOCOL = "tcp"
 
+# ==========================
 
 # Data storage ocnfiguration
+# ==========================
 ## index name
 INDEX_LAST_LINE_STATUS = "log_last_line_status"
 
@@ -65,8 +69,21 @@ INDEX_EVENTS_STORAGE = "events"
 
 INDEX_VECTOR_STORE = "vector_store"
 
+# ==========================
+
 # LLM model
+# ==========================
 # gemini model
 GEMINI_LLM_MODEL = "gemini-2.0-flash"
 # GEMINI_LLM_MODEL = "gemini-1.5-flash-8b"
+
+# ==========================
+
+
+# agents
+# ==========================
+# random sample size of log used in PreProcessAgent to generate search query, higher is better for accuracy, but computational time increase
+RANDOM_SAMPLE_SIZE = 50
+
+# ==========================
 

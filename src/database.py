@@ -169,15 +169,42 @@ class ElasticsearchDatabase(Database):
                 }
             }
         }
-        return self.instance.search(index=index, body=query)['hits']['hits']
+        try:
+            return self.instance.search(index=index, body=query)['hits']['hits']
+        except Exception as e:
+            self._logger.error(f"Error fetching random sample from index {index}: {e}")
+            exit(1)
+
+    def add_alias(self, index : str, alias : str, filter : dict = None):
+        """
+        add alias to index
+        """
+        query = {
+            "actions": [
+                {
+                    "add": {
+                        "index": index,
+                        "alias": alias,
+                        "filter": filter
+                    }
+                }
+            ]
+        }
+        try:
+            res = self.instance.indices.update_aliases(body=query)
+            return res
+        except Exception as e:
+            self._logger.error(f"Error adding alias {alias} to index {index}: {e}")
+            exit(1)
+
 
 def main():
     es = ElasticsearchDatabase()
 
-    res = es.random_sample("log_ssh", 10)
+    res = es.random_sample("log_ssh", 100)
 
     for r in res:
-        print(r["_source"])
+        print(r["_source"]["content"])
 
 
 

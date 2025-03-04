@@ -25,7 +25,7 @@ def interpre_event_prompt(event, files):
     """
 
 
-def filter_logs(event, info_for_tracing, apps):
+def filter_logs(event, info_for_tracing, apps, sample):
     return f"""
     # Context
     ## Event to Trace:
@@ -37,8 +37,15 @@ def filter_logs(event, info_for_tracing, apps):
     ## Relevant Applications:
     {apps}
 
+    ## sample log entries
+    {sample}
+
     # Your Task
-    Generate an Elasticsearch boolean query to search the database for log entries related to the provided event. The query should help extract relevant lines from logs stored in the Elasticsearch Database. The query should include the necessary patterns to trace the event effectively. You should generate boolean query in json format that fit into elasticsearch `search` api
+    Generate an Elasticsearch boolean query to search the database for log entries related to the provided event.
+    The query should help extract relevant lines from logs stored in the Elasticsearch Database.
+    The query should include the necessary patterns to trace the event effectively.
+    You should generate boolean query in json format that fit into elasticsearch `search` api.
+    there are some sample provided above, you should learn the format instead of focus on the content.
 
     ### rule in Boolean Query
     Boolean query

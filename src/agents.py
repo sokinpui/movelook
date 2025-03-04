@@ -11,6 +11,7 @@ import prompts.agents.pre_process as pap
 from logger import Logger
 from log_file import LogFile
 from database import ElasticsearchDatabase
+import config as cfg
 
 STOP = "stop"
 CONTINUE = "continue"
@@ -65,28 +66,40 @@ class PreProcessAgent:
 
         self._logger.info(f"agents: {self.__class__.__name__} working on event-id: {event.id}:")
 
-        prompt = pap.filter_logs(event.description, message, apps)
-        retrieved_prompt = self._rag.retrieve(prompt)
 
         class schema(BaseModel):
             search_queries : str = Field(description=f"""
-                                        The json format boolean query to search the database for log entries related to the provided event.
-                                                """)
+                                        The json format boolean query to search the database
+                                        for log entries related to the provided event.
+                                        """)
 
-        response = self.model.generate(retrieved_prompt, schema=schema)
-
-        try:
-            queries = json.loads(response.search_queries)
-            print(f"search_queries:\n{json.dumps(queries, indent=4)}")
-        except Exception as e:
-            print(f"search_queries: {response.search_queries}")
-            self._logger.error(f"Error parsing search queries to json: {e}")
-            exit(1)
-
+        sample = []
         for app in apps:
+
+            # get random sample from the database
+            random_data = self._db.random_sample(f"log_{app}", cfg.RANDOM_SAMPLE_SIZE)
+            for data in random_data:
+                sample.append(data["_source"]["content"])
+
+            prompt = pap.filter_logs(event.description, message, apps, sample)
+            response = self.model.generate(str(sample) + prompt, schema=schema)
+
+            try:
+                queries = json.loads(response.search_queries)
+                print(f"search_queries:\n{json.dumps(queries, indent=4)}")
+            except Exception as e:
+                print(f"search_queries: {response.search_queries}")
+                self._logger.error(f"Error parsing search queries to json: {e}")
+                exit(1)
+
             index = f"log_{app}"
             search_result = self._db.scroll_search(queries, index)
+
+            # create alias for collected lines
+            resp = self._db.add_alias(index, f"pre_process_{event.id}", filter=queries["query"])
+
             self._logger.info(f"agents: {self.__class__.__name__} search result for {app}: find {len(search_result)} related lines")
+
 
         return
 
@@ -110,7 +123,7 @@ def main():
 
     # sys_info.update_rag_from_directory("../rag/docs/", es_db)
 
-    e1 = Event(description="any invalid user login attempt via SSH?")
+    e1 = Event(description="Is IP address 185.165.29.69 invalid user, I mean in ssh")
     print(f"Event to trace: {e1.description}")
 
     agent = PreProcessAgent(model=model, rag=sys_info, db=es_db)

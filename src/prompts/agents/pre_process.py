@@ -27,53 +27,42 @@ def interpre_event_prompt(event, files):
 
 def filter_logs(event, info_for_tracing, apps):
     return f"""
-    ## Role
-    You are a Log Filter Agent in a multi-agent system tasked with generating Elasticsearch search queries to filter system log lines for further analysis.
+    # Context
+    ## Event to Trace:
+    {event}
 
-    ## Input
-    - **Event to Trace**: {event}
-    - **Tracing Information**: {info_for_tracing}
-    - **Relevant Applications**: {apps}
+    ## Tracing Information:
+    {info_for_tracing}
 
-    ## Task
-    1. Analyze the typical structure of system log lines based on common conventions (e.g., timestamp, log level, message, metadata fields like user_id or error_code).
-    2. Generate keywords or field-specific terms that can filter log lines related to the event `{event}`.
-    4. Ensure the query is broad enough to capture context but specific enough to avoid unrelated noise.
+    ## Relevant Applications:
+    {apps}
 
-    ## naming conventions in the elasticsearch
-    logs are organized in different indices based on the application name. For example, logs for the application `app1` are stored in the index `log_app1`.
+    # Your Task
+    Generate an Elasticsearch boolean query to search the database for log entries related to the provided event. The query should help extract relevant lines from logs stored in the Elasticsearch Database. The query should include the necessary patterns to trace the event effectively. You should generate boolean query in json format that fit into elasticsearch `search` api
 
-    use simple match query to filter the logs based on the event, you should only search the given applications
+    ### rule in Boolean Query
+    Boolean query
+    A query that matches documents matching boolean combinations of other queries. The bool query maps to Lucene BooleanQuery. It is built using one or more boolean clauses, each clause with a typed occurrence. The occurrence types are:
 
-    ## data structure of the logs store in the elasticsearch
-    ```
+    - must : The clause (query) must appear in matching documents and will contribute to the score. Each query defined under a must acts as a logical "AND", returning only documents that match all the specified queries.
+
+    - should : The clause (query) should appear in the matching document. Each query defined under a should acts as a logical "OR", returning documents that match any of the specified queries.
+
+    ## Elasticsearch Query Template
+    ```json
     {{
-        content=line,
-        line_number=i,
-        name=log.name,
-        id=log.id,
-        timestamp=datetime.now()
+      "query": {{
+        "bool": {{
+          "must": [
+            {{ "match": {{ "content": "<pattern1>" }} }},
+          ],
+          "should": [
+            {{ "match": {{ "content": "<pattern1>" }} }},
+          ]
+        }}
+      }}
     }}
     ```
-
-    ## template of the search query
-    ```
-    {{
-        "query": {{
-            "bool": {{
-                "should": [
-                    {{ "match": {{ "content": "<pattern1>" }} }},
-                    {{ "match": {{ "content": "<pattern2>" }} }},
-                    .
-                    .
-                    .
-                    {{ "match": {{ "content": "<patternN>" }} }}
-                ]
-            }}
-        }},
-    }}
-    ```
-
     """
 
 def main():

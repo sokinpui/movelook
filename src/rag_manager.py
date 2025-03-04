@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from logger import Logger
 from database import ElasticsearchDatabase
-import prompts.rag as p
+import prompts.rag as pr
 import config as cfg
 from llm_model import LLMModel
 
@@ -30,6 +30,7 @@ class RAGManager:
 
         self._model = model
         self._embeddings = embeddings
+
         self._vector_store = db.set_vector_store(embeddings=embeddings, index=self._db_index)
 
         self._multi_threading = multi_threading
@@ -41,10 +42,11 @@ class RAGManager:
         get retrieved context from the vector store
         """
         retrieved_docs = self._vector_store.similarity_search(query=prompt, k=5)
+        self._logger.info(f"RAG: Retrieved {len(retrieved_docs)} documents, from {self._db_index}")
 
         docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
 
-        contextual_prompt = p.Prompt(question=prompt, context=docs_content)
+        contextual_prompt = pr.prompt(question=prompt, context=docs_content)
 
         return contextual_prompt
 

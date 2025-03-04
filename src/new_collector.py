@@ -164,9 +164,8 @@ class NewCollector:
 
                         action = {
                             "_index": "log_" + file.belongs_to,
-                            "_source": {
-                                "content": line_of_log.to_dict()
-                            }
+                            "_source": line_of_log.to_dict()
+
                         }
                         actions.append(action)
 
@@ -202,7 +201,7 @@ class NewCollector:
             },
             "_source": ["last_line_read"]
         }
-        last_line_status = db.search(query=query, index=cfg.INDEX_LAST_LINE_STATUS)
+        last_line_status = db.single_search(query=query, index=cfg.INDEX_LAST_LINE_STATUS)
         if last_line_status:
             return last_line_status[0]['_source']['last_line_read']
         else:

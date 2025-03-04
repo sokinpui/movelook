@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 from typing import TypedDict, List, Optional, Dict
-import os
+import json
 
 from llm_model import LLMModel, GeminiModel
 from event import Event
@@ -10,6 +10,7 @@ from prompts.role import SYSTEM_PROMPT
 import prompts.agents.pre_process as pap
 from logger import Logger
 from log_file import LogFile
+from database import ElasticsearchDatabase
 
 STOP = "stop"
 CONTINUE = "continue"
@@ -21,15 +22,17 @@ class PreProcessAgentState(TypedDict):
     apps : List[str]
 
 class PreProcessAgent:
-    def __init__(self, model: LLMModel, rag: RAGManager):
+    def __init__(self, model: LLMModel, rag: RAGManager, db: ElasticsearchDatabase):
         self.model = model
         self._rag = rag
+        self._db = db
         self._logger = Logger()
 
     def interpre_event(self, state: PreProcessAgentState) -> PreProcessAgentState | dict | None:
-        self._logger.info(f"agents: {self.__class__.__name__}.interpre_event:")
         event = state["working_event"]
         files = state["files"]
+
+        self._logger.info(f"agents: {self.__class__.__name__} working on event-id:{event.id}:")
 
         prompt = pap.interpre_event_prompt(event.description, files)
         retrieved_prompt = self._rag.retrieve(prompt)
@@ -55,44 +58,42 @@ class PreProcessAgent:
         }
 
     def filter_logs_lines(self, state: PreProcessAgentState) -> PreProcessAgentState | dict | None:
-        self._logger.info(f"agents: {self.__class__.__name__}.filter_logs_lines:")
 
         event = state["working_event"]
         message = state["message"]
         apps = state["apps"]
+
+        self._logger.info(f"agents: {self.__class__.__name__} working on event-id: {event.id}:")
 
         prompt = pap.filter_logs(event.description, message, apps)
         retrieved_prompt = self._rag.retrieve(prompt)
 
         class schema(BaseModel):
             search_queries : str = Field(description=f"""
-                                                the search queries to fileter the logs based on the event
+                                        The json format boolean query to search the database for log entries related to the provided event.
                                                 """)
 
-        response = self.model.generate(SYSTEM_PROMPT + retrieved_prompt, schema=schema)
-        import json
-        queries = json.loads(response.search_queries)
+        response = self.model.generate(retrieved_prompt, schema=schema)
 
-        print(f"search_queries:\n{json.dumps(queries, indent=4)}")
+        try:
+            queries = json.loads(response.search_queries)
+            print(f"search_queries:\n{json.dumps(queries, indent=4)}")
+        except Exception as e:
+            print(f"search_queries: {response.search_queries}")
+            self._logger.error(f"Error parsing search queries to json: {e}")
+            exit(1)
+
+        for app in apps:
+            index = f"log_{app}"
+            search_result = self._db.scroll_search(queries, index)
+            self._logger.info(f"agents: {self.__class__.__name__} search result for {app}: find {len(search_result)} related lines")
 
         return
 
+
+
 def test():
-    from new_collector import NewCollector
-
-    dir = "../log"
-    collector = NewCollector(dir=dir)
-    files = collector.collected_files
-
-    event = "The system is down"
-
-    info = "failed login attempts, authentication failures, invalid user attempts, brute-force attacks, and relevant timestamps"
-
-    apps = ["ssh"]
-
-    print(pap.filter_logs(event, info, apps))
-
-
+    pass
 
 def main():
     from llm_model import GeminiModel
@@ -109,10 +110,10 @@ def main():
 
     # sys_info.update_rag_from_directory("../rag/docs/", es_db)
 
-    e1 = Event(description="want to find if there is any high frequency of failed login attempts using ssh")
+    e1 = Event(description="any invalid user login attempt via SSH?")
     print(f"Event to trace: {e1.description}")
 
-    agent = PreProcessAgent(model=model, rag=sys_info)
+    agent = PreProcessAgent(model=model, rag=sys_info, db=es_db)
 
     state = {
         "working_event": e1,
@@ -131,4 +132,5 @@ def main():
     result = graph.invoke(state)
 
 if __name__ == "__main__":
+    # test()
     main()

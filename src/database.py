@@ -16,7 +16,7 @@ class Database(ABC):
         pass
 
     @abstractmethod
-    def search(self, query: dict, identifier: str = None):
+    def single_search(self, query: dict, identifier: str = None):
         """Search for data in the database. Identifier may specify a collection or index."""
         pass
 
@@ -53,7 +53,11 @@ class ElasticsearchDatabase(Database):
 
         self.instance.index(index=index, body=data)
 
-    def search(self, query : dict, index : str):
+    def single_search(self, query : dict, index : str):
+        """
+        return single search result
+        """
+        query["size"] = 1
         if self.instance is None:
             self._logger.error("Elasticsearch instance not initialized")
             print("please check if Container is running")
@@ -61,6 +65,55 @@ class ElasticsearchDatabase(Database):
 
         result = self.instance.search(index=index, body=query)
         return result['hits']['hits']
+
+    def scroll_search(self, query: dict, index: str):
+        """
+        Return all search results using the Scroll API.
+
+        Args:
+            query (dict): The Elasticsearch query body.
+            index (str): The index to search in.
+
+        Returns:
+            list: A list of all matching documents (hits).
+        """
+        if self.instance is None:
+            self._logger.error("Elasticsearch instance not initialized")
+            print("please check if Container is running")
+            exit(1)
+
+        # Initial search with scroll
+        scroll_size = 10000  # Number of documents per batch
+        query_with_size = query.copy()  # Avoid modifying the original query
+        if "size" not in query_with_size:
+            query_with_size["size"] = scroll_size  # Set batch size
+
+        all_hits = []
+        response = self.instance.search(
+            index=index,
+            body=query_with_size,
+            scroll="2m"  # Keep scroll context alive for 2 minutes
+        )
+
+        # Extract initial hits and scroll ID
+        scroll_id = response["_scroll_id"]
+        hits = response["hits"]["hits"]
+        all_hits.extend(hits)
+
+        # Continue scrolling until no more results
+        while len(hits) > 0:
+            response = self.instance.scroll(
+                scroll_id=scroll_id,
+                scroll="2m"  # Renew scroll context
+            )
+            scroll_id = response["_scroll_id"]
+            hits = response["hits"]["hits"]
+            all_hits.extend(hits)
+
+        # Clean up scroll context (optional but good practice)
+        self.instance.clear_scroll(scroll_id=scroll_id)
+
+        return all_hits
 
 
     def update(self, id : str, data : dict, index : str,):
@@ -92,16 +145,41 @@ class ElasticsearchDatabase(Database):
             return None
 
     def set_vector_store(self, embeddings, index) -> ElasticsearchStore:
-        vector_store = ElasticsearchStore(
-            es_url=cfg.ELASTIC_SEARCH_URL,
-            index_name=index,
-            embedding=embeddings,
-        )
-        return vector_store
+        try:
+            vector_store = ElasticsearchStore(
+                es_url=cfg.ELASTIC_SEARCH_URL,
+                index_name=index,
+                embedding=embeddings,
+            )
+            return vector_store
+        except Exception as e:
+            self._logger.error(f"Error setting vector store: {e}")
+            exit(1)
+
+    def random_sample(self, index : str, size : int):
+        """
+        return random sample of size from index
+        """
+        query = {
+            "size": size,
+            "query": {
+                "function_score": {
+                    "query": {"match_all": {}},
+                    "random_score": {}
+                }
+            }
+        }
+        return self.instance.search(index=index, body=query)['hits']['hits']
 
 def main():
     es = ElasticsearchDatabase()
-    print(cfg.ELASTIC_SEARCH_URL)
+
+    res = es.random_sample("log_ssh", 10)
+
+    for r in res:
+        print(r["_source"])
+
+
 
 if __name__ == "__main__":
     main()

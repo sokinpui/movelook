@@ -107,20 +107,24 @@ Generate a precise, flexible Elasticsearch query targeting log entry content wit
 - Maintain clear, logical query structure
 """
 
-def search_feedback_prompt(hits, total_docs, query, message):
+def search_feedback_prompt(hits, total_docs, query, event, message):
     return f"""
-
-
 Given a search query '{query}' that returned {hits} hits out of {total_docs} total documents,
 
-## context of the search
+## Event Tracing for
+{event}
+
+## what information is search from the database
 {message}
 
+## Usage of the query
 this query is used to filter anormal line from a system log
-You should be careful that the number of hits may indeed be too extreme, due to the system is in trouble
 
-provide a short feedback sentence if the number of hits is too extreme (fewer than 5 or more than 90% of total documents).
-Additionally, you may include a brief comment on the query itself (e.g., its specificity or clarity) if relevant. Keep all feedback concise.
+## your task
+- provide a short feedback sentence about the hits rate, and the query itself, including any potential improvements
+- Keep all feedback concise.
+- you have to decide if search again is needed, if the number of hits is fewer than 1% or more than 90% of total documents, yes, no otherwise
+- calculate the percentage of hits rate
 """
 
 def main():

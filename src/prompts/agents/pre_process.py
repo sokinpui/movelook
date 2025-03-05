@@ -1,76 +1,127 @@
 def interpre_event_prompt(event, files):
-
     # get the unique value only
     applications = set([file.belongs_to for file in files])
 
-    return  f"""
-    ## Trace this event:
-    {event}
+    return f"""
+    ## Trace this Event: {event}
 
-    To trace the event , we need to gather some information.
+    ### Context Analysis Framework
+    - Chronological Perspective:
+      - What is the precise timeline of events?
+      - Are there any temporal patterns or anomalies?
 
-    - what inforamtion from the logs should be pay attention to trace the event?
-    - what are the applications that are related to the event?
+    - System Interaction Perspective:
+      - Which system components or applications are potentially involved?
+      - What are the interaction points between these components?
 
-    ## application in the system
+    - Causality Perspective:
+      - What might be the root cause of this event?
+      - Are there precursor events or conditions that could have triggered this?
+
+    - Impact Assessment:
+      - What is the potential scope of impact?
+      - Are there cascading effects on other system components?
+
+    ### Available System Applications
     {applications}
 
-    ## your task
+    ### Task Objectives
+    1. Identify critical information needed to trace the event comprehensively
+    2. Determine the most relevant applications for investigation
+    3. Propose potential investigation paths
 
-    you must choose the most relevant information from the logs that can be used to trace the event, and the applications that are related to the event.
+    ### Deliverable Requirements
+    - Provide a structured breakdown of required tracing information
+    - List applications that are most likely to contain relevant log entries
+    - Suggest key patterns or keywords for log search
 
-    Please analyze the event from multiple perspectives, such as chronological order, application interactions, potential causes, scope of impact,
-
-    \n
+    ### Analytical Constraints
+    - Focus on actionable and verifiable information
+    - Prioritize evidence-based reasoning
+    - Consider multiple hypothetical scenarios
     """
 
 
 def filter_logs(event, info_for_tracing, apps, sample):
     return f"""
-    # Context
-    ## Event to Trace:
-    {event}
+# Elasticsearch Log Search Query Generation
 
-    ## Tracing Information:
-    {info_for_tracing}
+## Objective
+Generate a precise, flexible Elasticsearch query targeting log entry content with the following constraints:
 
-    ## Relevant Applications:
-    {apps}
+### Search Context
+- Event: {event}
+- Tracing Information: {info_for_tracing}
+- Relevant Applications: {apps}
 
-    ## sample log entries
-    {sample}
+## Query Generation Guidelines
+- before generation, you should first think about what should be focus in the search
+- try to avoid noise in the search result
 
-    # Your Task
-    Generate an Elasticsearch boolean query to search the database for log entries related to the provided event.
-    The query should help extract relevant lines from logs stored in the Elasticsearch Database.
-    The query should include the necessary patterns to trace the event effectively.
-    You should generate boolean query in json format that fit into elasticsearch `search` api.
-    there are some sample provided above, you should learn the format instead of focus on the content.
+### Core Principles
+1. Focus exclusively on the "content" field
+2. Balance precision with comprehensive matching
+3. Use a combination of query types for robust search
 
-    ### rule in Boolean Query
-    Boolean query
-    A query that matches documents matching boolean combinations of other queries. The bool query maps to Lucene BooleanQuery. It is built using one or more boolean clauses, each clause with a typed occurrence. The occurrence types are:
-
-    - must : The clause (query) must appear in matching documents and will contribute to the score. Each query defined under a must acts as a logical "AND", returning only documents that match all the specified queries.
-
-    - should : The clause (query) should appear in the matching document. Each query defined under a should acts as a logical "OR", returning documents that match any of the specified queries.
-
-    ## Elasticsearch Query Template
-    ```json
-    {{
-      "query": {{
+### Query Structure Template
+```json
+{{
+    "query": {{
         "bool": {{
-          "must": [
-            {{ "match": {{ "content": "<pattern1>" }} }},
-          ],
-          "should": [
-            {{ "match": {{ "content": "<pattern1>" }} }},
-          ]
+            "should": [
+                // Flexible matching conditions
+            ],
+            "minimum_should_match": "x%"
         }}
-      }}
     }}
-    ```
-    """
+}}
+```
+
+### Matching Strategies
+1. **Phrase Matching** (`match_phrase`)
+   - Use for exact, ordered sequence matching
+   - Preserve precise word order and context
+   - Example: Match "user login failure"
+   - when order and proximity are critical
+
+2. **Token-Based Matching** (`match`)
+   - Support flexible, tokenized search
+   - Good for partial matches and relevance scoring
+   - Example: Match variations of login-related terms
+   - regardless of their order or proximity.
+
+### Refinement Techniques
+- Include multiple `should` conditions to increase match probability, if needed, you can combine `must`[AND logic] or `must_not` to enhance precise
+- at least 15 to ensure relevance
+- try to match different variations of the same concept
+- the pattern should not be too simple to avoid false positives
+- use `minimum_should_match` to control matching flexibility, around 40% to ensure relevance
+- try to use different query types to cover a wide range of log entry structures
+
+### Sample Log Context
+{sample}
+
+## Output Requirements
+- Provide a JSON-formatted Elasticsearch boolean query
+- Ensure query targets ONLY the "content" field
+- Maintain clear, logical query structure
+"""
+
+def search_feedback_prompt(hits, total_docs, query, message):
+    return f"""
+
+
+Given a search query '{query}' that returned {hits} hits out of {total_docs} total documents,
+
+## context of the search
+{message}
+
+this query is used to filter anormal line from a system log
+You should be careful that the number of hits may indeed be too extreme, due to the system is in trouble
+
+provide a short feedback sentence if the number of hits is too extreme (fewer than 5 or more than 90% of total documents).
+Additionally, you may include a brief comment on the query itself (e.g., its specificity or clarity) if relevant. Keep all feedback concise.
+"""
 
 def main():
     from new_collector import NewCollector

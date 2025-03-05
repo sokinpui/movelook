@@ -54,7 +54,7 @@ class GeminiModel(LLMModel):
             # set the embedding model
             self.embedding = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
 
-            self._logger.info("Gemini model is using, Gemini model initialized")
+            self._logger.info(f"Gemini model {model} is using, Gemini model initialized")
         except Exception as e:
             self._logger.error(f"Error in initializing Gemini model: {e}")
 

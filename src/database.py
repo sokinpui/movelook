@@ -159,6 +159,7 @@ class ElasticsearchDatabase(Database):
     def random_sample(self, index : str, size : int):
         """
         return random sample of size from index
+        the maximum size is 10000
         """
         query = {
             "size": size,
@@ -175,10 +176,27 @@ class ElasticsearchDatabase(Database):
             self._logger.error(f"Error fetching random sample from index {index}: {e}")
             exit(1)
 
-    def add_alias(self, index : str, alias : str, filter : dict = None):
+    def add_alias(self, index: str, alias: str, filter: dict = None):
         """
-        add alias to index
+        Add an alias to an index and return the count of documents matching the filter.
+
+        Args:
+            index: The index to alias.
+            alias: The name of the alias.
+            filter: Optional filter to apply to the alias (dict).
+
+        Returns:
+            'count' (number of matching documents).
         """
+        # Step 1: Get the count of documents matching the filter
+        try:
+            count_res = self.instance.count(index=index, body={"query": filter} if filter else None)
+            count = count_res["count"]
+        except Exception as e:
+            self._logger.error(f"Error counting documents for index {index} with filter {filter}: {e}")
+            exit(1)
+
+        # Step 2: Create the alias
         query = {
             "actions": [
                 {
@@ -192,19 +210,34 @@ class ElasticsearchDatabase(Database):
         }
         try:
             res = self.instance.indices.update_aliases(body=query)
-            return res
+            return count
         except Exception as e:
             self._logger.error(f"Error adding alias {alias} to index {index}: {e}")
             exit(1)
 
+    def count_docs(self, index: str, filter: dict = None):
+        resp = self.instance.count(index=index, body={"query": filter} if filter else None)
+
+        count = resp['count']
+        return count
+
 
 def main():
-    es = ElasticsearchDatabase()
+    from llm_model import GeminiModel
 
-    res = es.random_sample("log_ssh", 100)
+    es = ElasticsearchDatabase()
+    model = GeminiModel()
+    sample = []
+
+    res = es.random_sample("log_ssh", 500)
 
     for r in res:
-        print(r["_source"]["content"])
+        sample.append(r['_source']["content"])
+
+    for r in res:
+        sample.append(r['_source']["content"])
+
+    print(f"total tokens: {model.token_count(str(sample))}")
 
 
 

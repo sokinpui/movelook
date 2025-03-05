@@ -83,7 +83,7 @@ GEMINI_LLM_MODEL = "gemini-2.0-flash"
 # agents
 # ==========================
 # random sample size of log used in PreProcessAgent to generate search query, higher is better for accuracy, but computational time increase
-RANDOM_SAMPLE_SIZE = 50
+RANDOM_SAMPLE_SIZE = 16
 
 # ==========================
 

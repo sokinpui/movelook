@@ -12,6 +12,7 @@ import prompts.agents.pre_process as pap
 from logger import Logger
 from log_file import LogFile
 from database import ElasticsearchDatabase
+from .agent_abc import Agent
 import config as cfg
 
 STOP = "stop"
@@ -31,12 +32,49 @@ class PreProcessAgentState(TypedDict):
     hits: int
     route_back: bool
 
-class PreProcessAgent:
-    def __init__(self, model: LLMModel, rag: RAGManager, db: ElasticsearchDatabase):
+class PreProcessAgent(Agent):
+    def __init__(self,  model: LLMModel, rag: RAGManager, db: ElasticsearchDatabase, state_dict=PreProcessAgentState):
         self.model = model
+
+        self.workflow = StateGraph(state_dict)
+        self._build_graph()
+        self.graph = self.workflow.compile()
+
         self._rag = rag
         self._db = db
         self._logger = Logger()
+
+    def run(self, state: PreProcessAgentState) -> PreProcessAgentState:
+        """
+        run the agent synchronously with `invoke` method
+        """
+        state = self.graph.invoke(state)
+        return state
+
+    async def arun(self, state: PreProcessAgentState) -> PreProcessAgentState:
+        """
+        run the agent asynchronously with `invoke` method
+        """
+        state = await self.graph.ainvoke(state)
+        return state
+
+    def _build_graph(self):
+        self.workflow.add_node("node1", self.interpre_event)
+        self.workflow.add_node("node2", self.gen_search_query)
+        self.workflow.add_node("db_search", self.search_in_db)
+        self.workflow.add_node("node4", self.search_feedback)
+
+        self.workflow.add_edge(START, "node1")
+        self.workflow.add_edge("node1", "node2")
+        self.workflow.add_edge("node2", "db_search")
+        self.workflow.add_edge("db_search", "node4")
+        self.workflow.add_conditional_edges("node4",
+            lambda state: "refine_search" if state["route_back"] else "proceed_to_next",
+                {
+                    "refine_search": "node2",
+                    "proceed_to_next": END
+                }
+        )
 
     def _list_to_indices(self, apps: List[str]) -> str:
         return ",".join(f"log_{app}" for app in apps)
@@ -168,27 +206,7 @@ def main():
         "files": collector.collected_files,
     }
 
-    builder = StateGraph(PreProcessAgentState)
-    builder.add_node("node1", agent.interpre_event)
-    builder.add_node("node2", agent.gen_search_query)
-    builder.add_node("db_search", agent.search_in_db)
-    builder.add_node("node4", agent.search_feedback)
-
-    builder.add_edge(START, "node1")
-    builder.add_edge("node1", "node2")
-    builder.add_edge("node2", "db_search")
-    builder.add_edge("db_search", "node4")
-    builder.add_conditional_edges("node4",
-        lambda state: "refine_search" if state["route_back"] else "proceed_to_next",
-            {
-                "refine_search": "node2",
-                "proceed_to_next": END
-            }
-    )
-
-    graph = builder.compile()
-
-    result = graph.invoke(state)
+    result = agent.run(state)
 
     import pprint
     result["files"] = None

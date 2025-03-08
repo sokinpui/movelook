@@ -12,20 +12,12 @@ import prompts.agents.pre_process as pap
 from logger import Logger
 from log_file import LogFile
 from database import ElasticsearchDatabase
-from .agent_abc import Agent
+from .agent_abc import Agent, add_string_message
 import config as cfg
-
-STOP = "stop"
-CONTINUE = "continue"
-
-def add_message(left: list[str], right: str | list[str]) -> list[str]:
-    if isinstance(right, str):
-        return left + [right]
-    return left + right
 
 class PreProcessAgentState(TypedDict):
     working_event: Event
-    message: Annotated[list[str], add_message]
+    message: Annotated[list[str], add_string_message]
     files : List[LogFile]
     apps : List[str]
     query: dict

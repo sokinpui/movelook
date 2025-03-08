@@ -131,12 +131,13 @@ class PreProcessAgent(Agent):
         return { "query": query }
 
     def search_in_db(self, state: PreProcessAgentState) -> PreProcessAgentState | dict | None:
+
         event = state["working_event"]
         query = state["query"]
         apps = state["apps"]
 
         indices = self._list_to_indices(apps)
-        hits = self._db.add_alias(indices, f"pre_process_{event.id}", filter=query["query"])
+        hits = self._db.add_alias(indices, cfg.get_pre_process_index(event.id), filter=query["query"])
 
         self._logger.info(f"Agent: DB Search: {hits} hits | Event ID: {event.id}")
 

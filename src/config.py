@@ -85,5 +85,11 @@ GEMINI_LLM_MODEL = "gemini-2.0-flash"
 # random sample size of log used in PreProcessAgent to generate search query, higher is better for accuracy, but computational time increase
 RANDOM_SAMPLE_SIZE = 16
 
+def get_pre_process_index(event_id : int) -> str:
+    """
+    return pre process index name that store filtered log for event_id
+    """
+    return f"pre_process_{event_id}"
+
 # ==========================
 

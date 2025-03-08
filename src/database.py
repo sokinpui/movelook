@@ -158,7 +158,7 @@ class ElasticsearchDatabase(Database):
 
     def random_sample(self, index : str, size : int):
         """
-        return random sample of size from index
+        return random sample of all field and size from index
         the maximum size is 10000
         """
         query = {
@@ -220,6 +220,98 @@ class ElasticsearchDatabase(Database):
 
         count = resp['count']
         return count
+
+    def get_unique_values_composite(self, index: str, field: str, page_size=1000, sort_order="asc"):
+        """
+        Retrieves unique values from a field in Elasticsearch using the composite aggregation.
+        Returns all unique values in the field.
+
+        Args:
+            es_client (Elasticsearch): Elasticsearch client instance.
+            index_name (str): Name of the Elasticsearch index.
+            field_name (str): Name of the field to get unique values from.
+            page_size (int): The number of terms to return per page.
+
+        Returns:
+            list: A list of unique values.
+        """
+        unique_values = []
+        after_key = None
+
+        try:
+            while True:
+                query = {
+                    "size": 0,
+                    "aggs": {
+                        "unique_values": {
+                            "composite": {
+                                "sources": [
+                                    {"field": {
+                                        "terms": {"field": field},
+                                        "order": {"_key": sort_order}
+                                    }
+                                }],
+                                "size": page_size,
+                            }
+                        }
+                    },
+                }
+
+                if after_key:
+                    query["aggs"]["unique_values"]["composite"]["after"] = after_key
+
+                response = self.instance.search(index=index, body=query)
+
+                buckets = response["aggregations"]["unique_values"]["buckets"]
+                unique_values.extend([bucket["key"][field] for bucket in buckets])
+
+                if "after_key" in response["aggregations"]["unique_values"]:
+                    after_key = response["aggregations"]["unique_values"]["after_key"]
+                else:
+                    break
+
+            return unique_values
+
+        except Exception as e:
+            print(f"Error retrieving unique values: {e}")
+            return []
+
+    def get_unique_values(self, index: str, field: str, size=1000, sort_order="asc"):
+        """
+        Retrieves unique values from a field in Elasticsearch using the terms aggregation.
+
+        Args:
+            es_client (Elasticsearch): Elasticsearch client instance.
+            index_name (str): Name of the Elasticsearch index.
+            field_name (str): Name of the field to get unique values from.
+            size (int): The maximum number of terms to return. range: 1-10000
+
+        Returns:
+            list: A list of unique values.
+        """
+        try:
+            response = self.instance.search(
+                index=index,
+                size=0,
+                aggs={
+                    "unique_values": {
+                        "terms": {
+                            "field": field,
+                            "size": size,
+                            "order": {"_key": sort_order}
+                        }
+                    }
+                },
+            )
+
+            unique_values = [
+                bucket["key"] for bucket in response["aggregations"]["unique_values"]["buckets"]
+            ]
+            return unique_values
+
+        except Exception as e:
+            print(f"Error retrieving unique values: {e}")
+            return []
 
 
 def main():

@@ -120,7 +120,7 @@ class NewCollector:
                         id=log.id,
                         timestamp=datetime.now()
                 )
-                db.insert(line_of_log.to_dict(), "log_" + log.belongs_to)
+                db.insert(line_of_log.to_dict(), cfg.get_log_stroage_index(log.belongs_to))
             self._save_last_line_read(log, db, len(file_lines))
 
             self._logger.info(f"collector: Inserted {len(file_lines) - last_line_read} lines of {log.name}, range: {last_line_read} - {len(file_lines)}")

@@ -65,6 +65,12 @@ INDEX_LAST_LINE_STATUS = "log_last_line_status"
 
 INDEX_LOG_FILES_STORAGE = "log_files"
 
+def get_log_stroage_index(group : str) -> str:
+    """
+    return log file index name that store log file for event_id
+    """
+    return f"log_{group}"
+
 INDEX_EVENTS_STORAGE = "events"
 
 INDEX_VECTOR_STORE = "vector_store"
@@ -91,5 +97,7 @@ def get_pre_process_index(event_id : int) -> str:
     """
     return f"pre_process_{event_id}"
 
+# Maximum Memory context sie for analyze agent to store summary
+MEMRORY_TOKENS_LIMIT = 5000
 # ==========================
 

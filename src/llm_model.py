@@ -38,8 +38,13 @@ class LLMModel:
 
 class GeminiModel(LLMModel):
     # Gemini-specific implementation
+    """
+    by default, asusme using gemini flash 2.0
+    """
     def __init__(self):
         super().__init__()
+
+        self.context_size = 100000
 
         model = cfg.GEMINI_LLM_MODEL
         api_key = os.environ['GENAI_API_KEY']

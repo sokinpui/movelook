@@ -125,6 +125,7 @@ this query is used to filter anormal line from a system log
 - Keep all feedback concise.
 - you have to decide if search again is needed, if the number of hits is fewer than 1% or more than 90% of total documents, yes, no otherwise
 - calculate the percentage of hits rate
+- if the hits rate is less than 1%, don't say it is too narrow event if the hits lines is high, because the sample size may be very large sometimes, suggest a border context window in the feedback instead
 """
 
 def main():

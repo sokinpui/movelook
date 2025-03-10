@@ -75,7 +75,7 @@ class ElasticsearchDatabase(Database):
             index (str): The index to search in.
 
         Returns:
-            list: A list of all matching documents (hits).
+            list: A list of all matching documents (response["hits"]["hits"]).
         """
         if self.instance is None:
             self._logger.error("Elasticsearch instance not initialized")
@@ -246,9 +246,8 @@ class ElasticsearchDatabase(Database):
                         "unique_values": {
                             "composite": {
                                 "sources": [
-                                    {"field": {
-                                        "terms": {"field": field},
-                                        "order": {"_key": sort_order}
+                                    {field: {
+                                        "terms": {"field": field, "order": sort_order},
                                     }
                                 }],
                                 "size": page_size,
